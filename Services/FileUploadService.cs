@@ -20,7 +20,7 @@ namespace Gentlemen.Services
         public FileUploadService(IWebHostEnvironment environment)
         {
             _environment = environment;
-            _uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
+            _uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
             
             // Ensure uploads folder exists
             if (!Directory.Exists(_uploadsFolder))
@@ -44,12 +44,12 @@ namespace Gentlemen.Services
                 throw new ArgumentException("Invalid file type. Only image files are allowed.");
             }
 
-            // Create unique filename
-            var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-            var filePath = Path.Combine(_uploadsFolder, uniqueFileName);
-
             try
             {
+                // Create unique filename
+                var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+                var filePath = Path.Combine(_uploadsFolder, uniqueFileName);
+
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(fileStream);
@@ -60,7 +60,7 @@ namespace Gentlemen.Services
             }
             catch (Exception ex)
             {
-                throw new Exception($"File upload failed: {ex.Message}");
+                throw new Exception($"File upload failed: {ex.Message}", ex);
             }
         }
 
@@ -82,7 +82,7 @@ namespace Gentlemen.Services
             }
             catch (Exception ex)
             {
-                throw new Exception($"File deletion failed: {ex.Message}");
+                throw new Exception($"File deletion failed: {ex.Message}", ex);
             }
         }
     }

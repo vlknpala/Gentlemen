@@ -35,13 +35,12 @@ builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 
 // Add DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
 // Ensure upload directory exists
-var uploadDir = Path.Combine(builder.Environment.WebRootPath, "uploads");
+var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
 if (!Directory.Exists(uploadDir))
 {
     Directory.CreateDirectory(uploadDir);
