@@ -1,0 +1,91 @@
+@model Gentlemen.Models.StyleTip
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("Index")">Stil İpuçları</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+        </ol>
+    </nav>
+
+    <article class="style-tip">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" class="img-fluid rounded mb-4" alt="@Model.Title">
+                }
+
+                <h1 class="mb-4">@Model.Title</h1>
+
+                <div class="meta mb-4">
+                    <span class="me-3">
+                        <i class="fas fa-user"></i> @Model.Author
+                    </span>
+                    <span class="me-3">
+                        <i class="fas fa-calendar"></i> @Model.PublishDate.ToString("dd.MM.yyyy")
+                    </span>
+                    <span class="me-3">
+                        <i class="fas fa-folder"></i> @Model.Category
+                    </span>
+                    <span>
+                        <i class="fas fa-heart"></i> @Model.Likes beğeni
+                    </span>
+                </div>
+
+                <div class="content mb-5">
+                    @Html.Raw(Model.Content)
+                </div>
+
+                <div class="actions mb-4">
+                    <button class="btn btn-outline-danger me-2 like-button" data-tip-id="@Model.Id">
+                        <i class="fas fa-heart"></i> Beğen <span class="like-count">(@Model.Likes)</span>
+                    </button>
+                    <button class="btn btn-primary" onclick="window.print()">
+                        <i class="fas fa-print"></i> Yazdır
+                    </button>
+                </div>
+
+                <div class="share-section">
+                    <h5>Bu İpucunu Paylaş</h5>
+                    <div class="social-share">
+                        <a href="#" class="btn btn-outline-primary me-2">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-info me-2">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-success me-2">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary">
+                            <i class="fab fa-pinterest"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.like-button').click(function () {
+                var button = $(this);
+                var tipId = button.data('tip-id');
+                
+                $.post('/StyleTip/Like/' + tipId, function (response) {
+                    if (response.success) {
+                        button.find('.like-count').text('(' + response.likes + ')');
+                        button.addClass('btn-danger').removeClass('btn-outline-danger');
+                    }
+                });
+            });
+        });
+    </script>
+} 

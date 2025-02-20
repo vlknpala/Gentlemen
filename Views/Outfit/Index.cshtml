@@ -1,0 +1,98 @@
+@model IEnumerable<Gentlemen.Models.Outfit>
+
+@{
+    ViewData["Title"] = "Kombinler";
+}
+
+<div class="container py-5">
+    <h2 class="text-center mb-4">Kombinler</h2>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var outfit in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrEmpty(outfit.ImageUrl))
+                        {
+                            <img src="@outfit.ImageUrl" class="card-img-top" alt="@outfit.Title" style="height: 300px; object-fit: cover;">
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@outfit.Title</h5>
+                            <p class="card-text">@outfit.Description</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="likeOutfit(@outfit.Id)">
+                                        <i class="fas fa-heart"></i> <span id="likeCount-@outfit.Id">@outfit.Likes</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#outfitModal-@outfit.Id">
+                                        Detaylar
+                                    </button>
+                                </div>
+                                <small class="text-muted">@outfit.Season</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outfit Detail Modal -->
+                <div class="modal fade" id="outfitModal-@outfit.Id" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">@outfit.Title</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <img src="@outfit.ImageUrl" class="img-fluid rounded" alt="@outfit.Title">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Detaylar</h6>
+                                        <p>@outfit.Description</p>
+                                        <ul class="list-unstyled">
+                                            <li><strong>Sezon:</strong> @outfit.Season</li>
+                                            <li><strong>Stil:</strong> @outfit.Style</li>
+                                            <li><strong>Durum:</strong> @outfit.Occasion</li>
+                                            <li><strong>Tahmini Fiyat:</strong> @outfit.EstimatedPrice.ToString("C")</li>
+                                        </ul>
+                                        @if (outfit.ClothingItems != null && outfit.ClothingItems.Any())
+                                        {
+                                            <h6>Kıyafet Parçaları</h6>
+                                            <ul>
+                                                @foreach (var item in outfit.ClothingItems)
+                                                {
+                                                    <li>@item</li>
+                                                }
+                                            </ul>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center">
+            Henüz kombin eklenmemiş.
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function likeOutfit(id) {
+            $.post('/Outfit/Like/' + id, function(response) {
+                if (response.success) {
+                    $('#likeCount-' + id).text(response.likes);
+                }
+            });
+        }
+    </script>
+} 

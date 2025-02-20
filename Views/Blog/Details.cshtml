@@ -1,0 +1,94 @@
+@model Gentlemen.Models.Blog
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="@Url.Action("Index")">Bloglar</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+        </ol>
+    </nav>
+
+    <article class="blog-post">
+        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+        {
+            <img src="@Model.ImageUrl" class="img-fluid rounded mb-4" alt="@Model.Title">
+        }
+
+        <h1 class="blog-post-title mb-3">@Model.Title</h1>
+
+        <div class="blog-post-meta mb-4">
+            <span class="me-3">
+                <i class="fas fa-user"></i> @Model.Author
+            </span>
+            <span class="me-3">
+                <i class="fas fa-calendar"></i> @Model.PublishDate.ToString("dd.MM.yyyy")
+            </span>
+            <span class="me-3">
+                <i class="fas fa-folder"></i> @Model.Category
+            </span>
+            <span>
+                <i class="fas fa-eye"></i> @Model.ViewCount görüntülenme
+            </span>
+        </div>
+
+        <div class="blog-post-content">
+            @Html.Raw(Model.Content)
+        </div>
+
+        <div class="blog-post-share mt-5">
+            <h5>Bu Yazıyı Paylaş</h5>
+            <div class="social-share">
+                <a href="#" class="btn btn-outline-primary me-2">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="#" class="btn btn-outline-info me-2">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="#" class="btn btn-outline-success me-2">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="#" class="btn btn-outline-secondary">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+            </div>
+        </div>
+    </article>
+</div>
+
+@section Styles {
+    <style>
+        .blog-post {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .blog-post-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .blog-post-meta {
+            color: #666;
+        }
+
+        .blog-post-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #444;
+        }
+
+        .social-share .btn {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            line-height: 40px;
+            text-align: center;
+            border-radius: 50%;
+        }
+    </style>
+} 

@@ -1,0 +1,229 @@
+﻿@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<!-- Hero Section -->
+<section class="hero-section text-white text-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h1>Tarzınızı Keşfedin</h1>
+                <p class="lead mb-4">Modern erkeğin stil rehberi. Güncel trendler, stil ipuçları ve özel kombinlerle kişisel tarzınızı oluşturun.</p>
+                <div class="hero-buttons">
+                    <a asp-controller="StyleTip" asp-action="Index" class="btn btn-primary me-3">Stil İpuçları</a>
+                    <a asp-controller="Outfit" asp-action="Index" class="btn btn-outline-light">Kombinler</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Categories -->
+<section class="py-5">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2>Öne Çıkan Kategoriler</h2>
+            <p class="text-muted">Her ortam için mükemmel stil önerileri</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="category-card">
+                    <div class="category-image">
+                        <img src="/images/business-style.jpg" alt="İş Stili">
+                    </div>
+                    <div class="category-content">
+                        <h3>İş Stili</h3>
+                        <p class="text-muted">Profesyonel ve şık görünüm için öneriler</p>
+                        <a href="#" class="btn btn-outline-dark">Keşfet</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="category-card">
+                    <div class="category-image">
+                        <img src="/images/casual-style.jpg" alt="Günlük Stil">
+                    </div>
+                    <div class="category-content">
+                        <h3>Günlük Stil</h3>
+                        <p class="text-muted">Rahat ve trend günlük kombinler</p>
+                        <a href="#" class="btn btn-outline-dark">Keşfet</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="category-card">
+                    <div class="category-image">
+                        <img src="/images/special-occasions.jpg" alt="Özel Günler">
+                    </div>
+                    <div class="category-content">
+                        <h3>Özel Günler</h3>
+                        <p class="text-muted">Özel anlar için şık seçimler</p>
+                        <a href="#" class="btn btn-outline-dark">Keşfet</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Latest Style Tips -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2>Son Stil İpuçları</h2>
+            <p class="text-muted">En güncel stil önerileri ve trendler</p>
+        </div>
+        <div class="row g-4">
+            @foreach (var tip in ViewBag.LatestStyleTips ?? new List<StyleTip>())
+            {
+                <div class="col-md-4">
+                    <div class="tip-card h-100">
+                        <div class="tip-image">
+                            <img src="@tip.ImageUrl" alt="@tip.Title">
+                        </div>
+                        <div class="tip-content">
+                            <span class="tip-category">@tip.Category</span>
+                            <h3>@tip.Title</h3>
+                            <p class="text-muted">@tip.Description</p>
+                            <a asp-controller="StyleTip" asp-action="Details" asp-route-id="@tip.Id" class="blog-link">Devamını Oku →</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="text-center mt-5">
+            <a asp-controller="StyleTip" asp-action="Index" class="btn btn-primary">Tüm İpuçlarını Gör</a>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Outfits -->
+<section class="py-5">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2>Öne Çıkan Kombinler</h2>
+            <p class="text-muted">İlham veren kombin önerileri</p>
+        </div>
+        <div class="row g-4">
+            @foreach (var outfit in ViewBag.FeaturedOutfits ?? new List<Outfit>())
+            {
+                <div class="col-md-6">
+                    <div class="outfit-card">
+                        <div class="outfit-image">
+                            <img src="@outfit.ImageUrl" alt="@outfit.Title">
+                            <div class="outfit-overlay">
+                                <span class="outfit-season">@outfit.Season</span>
+                                <span class="outfit-style">@outfit.Style</span>
+                            </div>
+                        </div>
+                        <div class="outfit-content">
+                            <h3>@outfit.Title</h3>
+                            <p class="text-muted">@outfit.Description</p>
+                            <div class="outfit-meta">
+                                <span class="price">@outfit.EstimatedPrice.ToString("C")</span>
+                                <a asp-controller="Outfit" asp-action="Details" asp-route-id="@outfit.Id" class="btn btn-outline-dark">Detaylar</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="text-center mt-5">
+            <a asp-controller="Outfit" asp-action="Index" class="btn btn-primary">Tüm Kombinleri Gör</a>
+        </div>
+    </div>
+</section>
+
+<!-- Latest Blog Posts -->
+<section class="py-5 bg-light mb-5">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2>Stil Blogu</h2>
+            <p class="text-muted">Moda ve stil dünyasından en son haberler</p>
+        </div>
+        <div class="row g-4">
+            @foreach (var post in ViewBag.LatestBlogPosts ?? new List<Blog>())
+            {
+                <div class="col-md-4">
+                    <div class="blog-card h-100">
+                        <div class="blog-image">
+                            <img src="@post.ImageUrl" alt="@post.Title">
+                            <span class="blog-category">@post.Category</span>
+                        </div>
+                        <div class="blog-content">
+                            <h3>@post.Title</h3>
+                            <p class="text-muted">@post.Content.Substring(0, Math.Min(post.Content.Length, 100))...</p>
+                            <div class="blog-meta">
+                                <span>@post.PublishDate.ToString("dd MMMM yyyy")</span>
+                                <a asp-controller="Blog" asp-action="Details" asp-route-id="@post.Id" class="blog-link">Devamını Oku →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="text-center mt-5">
+            <a asp-controller="Blog" asp-action="Index" class="btn btn-primary">Tüm Yazıları Gör</a>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter -->
+<section class="newsletter py-5">
+    <div class="container">
+        <div class="newsletter-content text-center">
+            <h2>Bültenimize Abone Olun</h2>
+            <p class="text-muted mb-4">En yeni stil ipuçları ve trendler için bültenimize abone olun.</p>
+            <form class="newsletter-form">
+                <div class="input-group">
+                    <input type="email" class="form-control" placeholder="E-posta adresiniz">
+                    <button class="btn btn-primary" type="submit">Abone Ol</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Simple Footer -->
+<div class="simple-footer py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3">
+                <h5>Gentlemen</h5>
+                <p class="text-muted">Stil sahibi erkeklerin ilham kaynağı.</p>
+                <div class="social-links">
+                    <a href="#" class="text-primary me-2"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="text-info me-2"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-danger me-2"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-danger"><i class="fab fa-pinterest"></i></a>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <h5>Hızlı Bağlantılar</h5>
+                <ul class="list-unstyled">
+                    <li><a href="/" class="text-muted">Ana Sayfa</a></li>
+                    <li><a href="/StyleTip" class="text-muted">Stil İpuçları</a></li>
+                    <li><a href="/Outfit" class="text-muted">Kombinler</a></li>
+                    <li><a href="/Blog" class="text-muted">Blog</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-3">
+                <h5>Kategoriler</h5>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-muted">İş Stili</a></li>
+                    <li><a href="#" class="text-muted">Günlük Stil</a></li>
+                    <li><a href="#" class="text-muted">Özel Günler</a></li>
+                    <li><a href="#" class="text-muted">Aksesuarlar</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-3">
+                <h5>Bülten</h5>
+                <p class="text-muted">En yeni stil ipuçları ve trendler için bültenimize abone olun.</p>
+                <div class="input-group">
+                    <input type="email" class="form-control" placeholder="E-posta adresiniz">
+                    <button class="btn btn-primary">Abone Ol</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

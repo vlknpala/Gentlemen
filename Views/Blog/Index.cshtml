@@ -1,0 +1,51 @@
+@model IEnumerable<Gentlemen.Models.Blog>
+
+@{
+    ViewData["Title"] = "Bloglar";
+}
+
+<div class="container">
+    <h1 class="section-title">Bloglar</h1>
+
+    <div class="row mb-4">
+        <div class="col">
+            <a href="@Url.Action("Create")" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Yeni Blog Yazısı
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        @foreach (var blog in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    @if (!string.IsNullOrEmpty(blog.ImageUrl))
+                    {
+                        <img src="@blog.ImageUrl" class="card-img-top" alt="@blog.Title">
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title">@blog.Title</h5>
+                        <p class="card-text">@(blog.Content.Length > 150 ? blog.Content.Substring(0, 150) + "..." : blog.Content)</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-user"></i> @blog.Author
+                            </small>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> @blog.PublishDate.ToString("dd.MM.yyyy")
+                            </small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">@blog.Category</span>
+                            <a href="@Url.Action("Details", new { id = blog.Id })" class="btn btn-outline-primary btn-sm">
+                                Devamını Oku
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div> 

@@ -1,0 +1,142 @@
+@model Gentlemen.Models.Outfit
+
+@{
+    ViewData["Title"] = "Yeni Kombin";
+}
+
+<div class="container">
+    <h1 class="section-title">Yeni Kombin</h1>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label">Başlık</label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Açıklama</label>
+                    <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ImageUrl" class="form-label">Görsel URL</label>
+                    <input asp-for="ImageUrl" class="form-control" />
+                    <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="Season" class="form-label">Sezon</label>
+                            <select asp-for="Season" class="form-select">
+                                <option value="">Sezon Seçin</option>
+                                <option value="Yaz">Yaz</option>
+                                <option value="Kış">Kış</option>
+                                <option value="İlkbahar">İlkbahar</option>
+                                <option value="Sonbahar">Sonbahar</option>
+                            </select>
+                            <span asp-validation-for="Season" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="Style" class="form-label">Stil</label>
+                            <select asp-for="Style" class="form-select">
+                                <option value="">Stil Seçin</option>
+                                <option value="Casual">Günlük</option>
+                                <option value="Business">İş</option>
+                                <option value="Sport">Spor</option>
+                                <option value="Evening">Gece</option>
+                                <option value="Vintage">Vintage</option>
+                            </select>
+                            <span asp-validation-for="Style" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="Occasion" class="form-label">Durum</label>
+                            <select asp-for="Occasion" class="form-select">
+                                <option value="">Durum Seçin</option>
+                                <option value="Daily">Günlük</option>
+                                <option value="Work">İş</option>
+                                <option value="Party">Parti</option>
+                                <option value="Wedding">Düğün</option>
+                                <option value="Special">Özel Gün</option>
+                            </select>
+                            <span asp-validation-for="Occasion" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="EstimatedPrice" class="form-label">Tahmini Fiyat</label>
+                    <input asp-for="EstimatedPrice" class="form-control" type="number" step="0.01" />
+                    <span asp-validation-for="EstimatedPrice" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ClothingItems" class="form-label">Kıyafet Parçaları</label>
+                    <div id="clothingItemsContainer">
+                        <div class="input-group mb-2">
+                            <input type="text" name="ClothingItems[0]" class="form-control" placeholder="Örn: Siyah Blazer Ceket" />
+                            <button type="button" class="btn btn-outline-danger remove-item" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="addItem">
+                        <i class="fas fa-plus"></i> Parça Ekle
+                    </button>
+                </div>
+
+                <div class="mb-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Kaydet
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Geri Dön
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+            var itemCount = 1;
+
+            $('#addItem').click(function () {
+                var newItem = `
+                    <div class="input-group mb-2">
+                        <input type="text" name="ClothingItems[${itemCount}]" class="form-control" placeholder="Örn: Siyah Blazer Ceket" />
+                        <button type="button" class="btn btn-outline-danger remove-item">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>`;
+                $('#clothingItemsContainer').append(newItem);
+                itemCount++;
+
+                // İlk öğenin silme butonunu göster
+                $('.remove-item').show();
+            });
+
+            $(document).on('click', '.remove-item', function () {
+                $(this).closest('.input-group').remove();
+                
+                // Eğer sadece bir öğe kaldıysa, silme butonunu gizle
+                if ($('.input-group').length === 1) {
+                    $('.remove-item').hide();
+                }
+            });
+        });
+    </script>
+} 
