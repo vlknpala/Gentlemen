@@ -22,7 +22,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered" id="outfitsTable">
+                <table id="outfitsTable" class="table table-bordered" width="100%">
                     <thead>
                         <tr>
                             <th>Görsel</th>
@@ -37,39 +37,30 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if (Model != null && Model.Any())
-                        {
-                            @foreach (var outfit in Model)
-                            {
-                                <tr>
-                                    <td>
-                                        @if (!string.IsNullOrEmpty(outfit.ImageUrl))
-                                        {
-                                            <img src="@outfit.ImageUrl" alt="@outfit.Title" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
-                                        }
-                                    </td>
-                                    <td>@outfit.Title</td>
-                                    <td>@outfit.Season</td>
-                                    <td>@outfit.Style</td>
-                                    <td>@outfit.Occasion</td>
-                                    <td>@outfit.EstimatedPrice.ToString("C")</td>
-                                    <td>@outfit.Likes</td>
-                                    <td>@outfit.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
-                                    <td>
-                                        <a href="javascript:void(0)" class="btn btn-sm btn-info" onclick="editOutfit(@outfit.Id)">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="javascript:void(0)" class="btn btn-sm btn-danger" onclick="deleteOutfit(@outfit.Id)">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                        else
+                        @foreach (var outfit in Model)
                         {
                             <tr>
-                                <td colspan="9" class="text-center">Henüz kombin eklenmemiş.</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(outfit.ImageUrl))
+                                    {
+                                        <img src="@outfit.ImageUrl" alt="@outfit.Title" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                                    }
+                                </td>
+                                <td>@outfit.Title</td>
+                                <td>@outfit.Season</td>
+                                <td>@outfit.Style</td>
+                                <td>@outfit.Occasion</td>
+                                <td>@outfit.EstimatedPrice.ToString("C")</td>
+                                <td>@outfit.Likes</td>
+                                <td>@outfit.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>
+                                    <a href="javascript:void(0)" class="btn btn-sm btn-info" onclick="editOutfit(@outfit.Id)">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="javascript:void(0)" class="btn btn-sm btn-danger" onclick="deleteOutfit(@outfit.Id)">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -168,13 +159,18 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // DataTable initialization
-            $('#outfitsTable').DataTable({
+            var table = $('#outfitsTable').DataTable({
+                responsive: true,
                 language: {
-                    url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Turkish.json'
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
                 },
+                columnDefs: [
+                    { orderable: false, targets: [0, 8] }, // Görsel ve İşlemler sütunları sıralanamaz
+                    { searchable: false, targets: [0, 8] } // Görsel ve İşlemler sütunları aranamaz
+                ],
                 order: [[7, 'desc']], // Eklenme tarihine göre sırala
-                pageLength: 10
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tümü"]]
             });
 
             // Image preview
@@ -211,10 +207,10 @@
             // Form submission
             $('#addOutfitForm').submit(function(e) {
                 e.preventDefault();
-                
+
                 // Form verilerini topla
                 const formData = new FormData(this);
-                
+
                 // Kıyafet parçalarını düzenle
                 const clothingItems = [];
                 $('#clothingItemsContainer input[type="text"]').each(function() {
@@ -226,7 +222,7 @@
                 clothingItems.forEach((item, index) => {
                     formData.append(`ClothingItems[${index}]`, item);
                 });
-                
+
                 // AJAX isteği gönder
                 $.ajax({
                     url: '/Admin/AddOutfit',
@@ -264,7 +260,7 @@
                 </div>
             `;
             $('#alertContainer').html(alertHtml);
-            
+
             // 3 saniye sonra alert'i kaldır
             setTimeout(() => {
                 $('.alert').fadeOut();
@@ -288,4 +284,4 @@
             }
         }
     </script>
-} 
+}

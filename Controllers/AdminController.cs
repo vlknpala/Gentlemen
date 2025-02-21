@@ -34,13 +34,13 @@ namespace Gentlemen.Controllers
             if (ModelState.IsValid)
             {
                 // Sabit admin bilgileri
-                if (model.Username == "centilmen01@gmail.com" && model.Password == "centilmen01")
+                if (model.Username == "admin" && model.Password == "123123")
                 {
                     // Session'a admin bilgisini kaydet
                     HttpContext.Session.SetString("AdminUser", model.Username);
                     return RedirectToAction("Dashboard");
                 }
-                
+
                 ModelState.AddModelError("", "Geçersiz kullanıcı adı veya şifre.");
             }
             return View(model);
@@ -55,7 +55,7 @@ namespace Gentlemen.Controllers
         private bool IsAdmin()
         {
             var adminUser = HttpContext.Session.GetString("AdminUser");
-            return adminUser == "centilmen01@gmail.com";
+            return adminUser == "admin";
         }
 
         public IActionResult Dashboard()
@@ -66,7 +66,7 @@ namespace Gentlemen.Controllers
             ViewBag.BlogCount = _context.Blogs.Count();
             ViewBag.OutfitCount = _context.Outfits.Count();
             ViewBag.StyleTipCount = _context.StyleTips.Count();
-            
+
             return View();
         }
 
@@ -270,7 +270,7 @@ namespace Gentlemen.Controllers
         {
             if (!IsAdmin())
                 return RedirectToAction("Login");
-            
+
             return View();
         }
 
@@ -365,4 +365,4 @@ namespace Gentlemen.Controllers
             return View(blog);
         }
     }
-} 
+}
