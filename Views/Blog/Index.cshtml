@@ -7,14 +7,6 @@
 <div class="container">
     <h1 class="section-title">Bloglar</h1>
 
-    <div class="row mb-4">
-        <div class="col">
-            <a href="@Url.Action("Create")" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Yeni Blog Yazısı
-            </a>
-        </div>
-    </div>
-
     <div class="row">
         @foreach (var blog in Model)
         {

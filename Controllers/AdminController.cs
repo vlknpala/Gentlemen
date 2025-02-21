@@ -34,7 +34,7 @@ namespace Gentlemen.Controllers
             if (ModelState.IsValid)
             {
                 // Sabit admin bilgileri
-                if (model.Username == "centilmen01" && model.Password == "centilmen01")
+                if (model.Username == "centilmen01@gmail.com" && model.Password == "centilmen01")
                 {
                     // Session'a admin bilgisini kaydet
                     HttpContext.Session.SetString("AdminUser", model.Username);
@@ -54,7 +54,8 @@ namespace Gentlemen.Controllers
 
         private bool IsAdmin()
         {
-            return HttpContext.Session.GetString("AdminUser") != null;
+            var adminUser = HttpContext.Session.GetString("AdminUser");
+            return adminUser == "centilmen01@gmail.com";
         }
 
         public IActionResult Dashboard()
@@ -263,6 +264,105 @@ namespace Gentlemen.Controllers
                 return Json(new { success = true });
             }
             return Json(new { success = false, message = "Stil ipucu bulunamadı." });
+        }
+
+        public IActionResult CreateBlog()
+        {
+            if (!IsAdmin())
+                return RedirectToAction("Login");
+            
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateBlog(Blog blog, IFormFile Image)
+        {
+            if (!IsAdmin())
+                return RedirectToAction("Login");
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    if (Image != null && Image.Length > 0)
+                    {
+                        string imageUrl = await _fileUploadService.UploadFileAsync(Image);
+                        blog.ImageUrl = imageUrl;
+                    }
+
+                    blog.PublishDate = DateTime.Now;
+                    blog.ViewCount = 0;
+
+                    _context.Blogs.Add(blog);
+                    await _context.SaveChangesAsync();
+
+                    return RedirectToAction(nameof(Blogs));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Blog kaydedilirken bir hata oluştu: " + ex.Message);
+                }
+            }
+            return View(blog);
+        }
+
+        public async Task<IActionResult> EditBlog(int id)
+        {
+            if (!IsAdmin())
+                return RedirectToAction("Login");
+
+            var blog = await _context.Blogs.FindAsync(id);
+            if (blog == null)
+                return NotFound();
+
+            return View(blog);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditBlog(int id, Blog blog, IFormFile Image)
+        {
+            if (!IsAdmin())
+                return RedirectToAction("Login");
+
+            if (id != blog.Id)
+                return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var existingBlog = await _context.Blogs.FindAsync(id);
+                    if (existingBlog == null)
+                        return NotFound();
+
+                    if (Image != null && Image.Length > 0)
+                    {
+                        // Delete old image if exists
+                        if (!string.IsNullOrEmpty(existingBlog.ImageUrl))
+                        {
+                            _fileUploadService.DeleteFile(existingBlog.ImageUrl);
+                        }
+
+                        string imageUrl = await _fileUploadService.UploadFileAsync(Image);
+                        existingBlog.ImageUrl = imageUrl;
+                    }
+
+                    existingBlog.Title = blog.Title;
+                    existingBlog.Content = blog.Content;
+                    existingBlog.Category = blog.Category;
+                    existingBlog.Author = blog.Author;
+
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Blogs));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Blog güncellenirken bir hata oluştu: " + ex.Message);
+                }
+            }
+            return View(blog);
         }
     }
 } 
