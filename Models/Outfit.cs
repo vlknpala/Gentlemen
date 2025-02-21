@@ -14,7 +14,6 @@ namespace Gentlemen.Models
         [Required(ErrorMessage = "Açıklama alanı zorunludur.")]
         public string Description { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Görsel URL alanı zorunludur.")]
         public string ImageUrl { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Sezon alanı zorunludur.")]
@@ -42,4 +41,4 @@ namespace Gentlemen.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
-} 
+}
