@@ -5,6 +5,10 @@
     Layout = "_AdminLayout";
 }
 
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+}
+
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3">Stil İpuçları Yönetimi</h1>
@@ -136,21 +140,38 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-tr-TR.min.js"></script>
     <script>
         $(document).ready(function() {
             // DataTables initialization
             var table = $('#styleTipsTable').DataTable({
                 responsive: true,
                 language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json',
+                    emptyTable: "Tabloda veri bulunmuyor",
+                    info: "_TOTAL_ kayıttan _START_ - _END_ arası gösteriliyor",
+                    infoEmpty: "Kayıt yok",
+                    loadingRecords: "Yükleniyor...",
+                    processing: "İşleniyor...",
+                    zeroRecords: "Eşleşen kayıt bulunamadı"
                 },
                 columnDefs: [
-                    { orderable: false, targets: [0, 6, 7] }, // Görsel, Öne Çıkan ve İşlemler sütunları sıralanamaz
-                    { searchable: false, targets: [0, 6, 7] } // Görsel, Öne Çıkan ve İşlemler sütunları aranamaz
+                    { orderable: false, targets: [0, 6, 7] },
+                    { searchable: false, targets: [0, 6, 7] }
                 ],
-                order: [[4, 'desc']], // Yayın tarihine göre sırala
+                order: [[4, 'desc']],
                 pageLength: 10,
-                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tümü"]]
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tümü"]],
+                stateSave: true,
+                drawCallback: function(settings) {
+                    // Tablo her yenilendiğinde çalışacak
+                    $('.featured-switch').off('change').on('change', function() {
+                        const id = $(this).data('id');
+                        const isFeatured = $(this).prop('checked');
+                        toggleFeatured(id, isFeatured, $(this));
+                    });
+                }
             });
 
             // Summernote initialization
@@ -165,7 +186,16 @@
                     ['insert', ['link']],
                     ['view', ['fullscreen', 'codeview', 'help']]
                 ],
-                lang: 'tr-TR'
+                lang: 'tr-TR',
+                styleTags: [
+                    'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
+                ],
+                callbacks: {
+                    onImageUpload: function(files) {
+                        // Görsel yükleme devre dışı
+                        return false;
+                    }
+                }
             });
 
             // Image preview
@@ -180,11 +210,34 @@
                 }
             });
 
+            function toggleFeatured(id, isFeatured, switchElement) {
+                $.post('/Admin/ToggleStyleTipFeatured/' + id, { isFeatured: isFeatured })
+                    .done(function(response) {
+                        if (!response.success) {
+                            showAlert('danger', response.message || 'Öne çıkarma durumu güncellenirken bir hata oluştu.');
+                            switchElement.prop('checked', !isFeatured);
+                        }
+                    })
+                    .fail(function() {
+                        showAlert('danger', 'İşlem sırasında bir hata oluştu.');
+                        switchElement.prop('checked', !isFeatured);
+                    });
+            }
+
             // Form submission
             $('#addStyleTipForm').submit(function(e) {
                 e.preventDefault();
+                console.log('Form submit başladı');
 
                 const formData = new FormData(this);
+                
+                // Form verilerini kontrol et
+                for (var pair of formData.entries()) {
+                    console.log(pair[0] + ': ' + pair[1]);
+                }
+
+                const submitButton = $(this).find('button[type="submit"]');
+                submitButton.prop('disabled', true);
 
                 $.ajax({
                     url: '/Admin/AddStyleTip',
@@ -193,34 +246,54 @@
                     processData: false,
                     contentType: false,
                     success: function(response) {
+                        console.log('AJAX başarılı:', response);
                         if (response.success) {
                             showAlert('success', response.message || 'Stil ipucu başarıyla eklendi.');
                             $('#addStyleTipModal').modal('hide');
                             $('#addStyleTipForm')[0].reset();
                             $('#imagePreview').hide();
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1500);
+                            $('.summernote').summernote('reset');
+                            
+                            // Sayfayı yenilemek yerine tabloyu yenile
+                            $.get('/Admin/StyleTips', function(data) {
+                                console.log('Tablo verisi alındı');
+                                const newContent = $(data).find('#styleTipsTable tbody').html();
+                                console.log('Yeni içerik:', newContent);
+                                table.clear().destroy();
+                                $('#styleTipsTable tbody').html(newContent);
+                                table = $('#styleTipsTable').DataTable({
+                                    responsive: true,
+                                    language: {
+                                        url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json',
+                                        emptyTable: "Tabloda veri bulunmuyor",
+                                        info: "_TOTAL_ kayıttan _START_ - _END_ arası gösteriliyor",
+                                        infoEmpty: "Kayıt yok",
+                                        loadingRecords: "Yükleniyor...",
+                                        processing: "İşleniyor...",
+                                        zeroRecords: "Eşleşen kayıt bulunamadı"
+                                    },
+                                    columnDefs: [
+                                        { orderable: false, targets: [0, 6, 7] },
+                                        { searchable: false, targets: [0, 6, 7] }
+                                    ],
+                                    order: [[4, 'desc']],
+                                    pageLength: 10,
+                                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tümü"]],
+                                    stateSave: true
+                                });
+                            }).fail(function(error) {
+                                console.error('Tablo güncelleme hatası:', error);
+                            });
                         } else {
                             showAlert('danger', response.message || 'Bir hata oluştu.');
+                            console.error('Sunucu hatası:', response);
                         }
+                        submitButton.prop('disabled', false);
                     },
                     error: function(xhr, status, error) {
+                        console.error('AJAX hatası:', {xhr, status, error});
                         showAlert('danger', 'Bir hata oluştu: ' + error);
-                    }
-                });
-            });
-
-            // Featured switch handler
-            $('.featured-switch').change(function() {
-                const id = $(this).data('id');
-                const isFeatured = $(this).prop('checked');
-
-                $.post('/Admin/ToggleStyleTipFeatured/' + id, { isFeatured: isFeatured }, function(response) {
-                    if (!response.success) {
-                        showAlert('danger', response.message || 'Öne çıkarma durumu güncellenirken bir hata oluştu.');
-                        // Switch'i eski haline getir
-                        $(this).prop('checked', !isFeatured);
+                        submitButton.prop('disabled', false);
                     }
                 });
             });

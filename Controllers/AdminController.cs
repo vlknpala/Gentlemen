@@ -369,41 +369,31 @@ namespace Gentlemen.Controllers
         public async Task<IActionResult> AddStyleTip([FromForm] StyleTip styleTip, IFormFile Image)
         {
             if (!IsAdmin())
-            {
-                _logger.LogWarning("Yetkisiz erişim denemesi - AddStyleTip");
                 return Json(new { success = false, message = "Yetkisiz erişim." });
-            }
 
             try
             {
-                _logger.LogInformation($"Yeni stil ipucu ekleme işlemi başladı. Başlık: {styleTip.Title}");
-
                 if (!ModelState.IsValid)
                 {
                     var errors = string.Join("; ", ModelState.Values
                         .SelectMany(v => v.Errors)
                         .Select(e => e.ErrorMessage));
-                    _logger.LogWarning($"Model doğrulama hatası: {errors}");
                     return Json(new { success = false, message = $"Geçersiz veri: {errors}" });
                 }
 
                 if (Image == null || Image.Length == 0)
                 {
-                    _logger.LogWarning("Görsel seçilmedi");
                     return Json(new { success = false, message = "Lütfen bir görsel seçin." });
                 }
 
                 // Görsel yükleme
                 try
                 {
-                    _logger.LogInformation("Görsel yükleme işlemi başladı");
                     string imageUrl = await _fileUploadService.UploadFileAsync(Image);
                     styleTip.ImageUrl = imageUrl;
-                    _logger.LogInformation($"Görsel başarıyla yüklendi: {imageUrl}");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Görsel yükleme hatası: {ex.Message}");
                     return Json(new { success = false, message = $"Görsel yükleme hatası: {ex.Message}" });
                 }
 
@@ -414,11 +404,10 @@ namespace Gentlemen.Controllers
                 // Veritabanına kaydet
                 try
                 {
-                    _logger.LogInformation("Veritabanına kaydetme işlemi başladı");
                     _context.StyleTips.Add(styleTip);
                     await _context.SaveChangesAsync();
 
-                    _logger.LogInformation($"Yeni stil ipucu başarıyla eklendi. ID: {styleTip.Id}, Başlık: {styleTip.Title}");
+                    _logger.LogInformation($"Yeni stil ipucu eklendi: {styleTip.Title}");
                     return Json(new { success = true, message = "Stil ipucu başarıyla eklendi." });
                 }
                 catch (Exception ex)
@@ -427,7 +416,6 @@ namespace Gentlemen.Controllers
                     if (!string.IsNullOrEmpty(styleTip.ImageUrl))
                     {
                         _fileUploadService.DeleteFile(styleTip.ImageUrl);
-                        _logger.LogInformation($"Yüklenen görsel silindi: {styleTip.ImageUrl}");
                     }
 
                     _logger.LogError($"Veritabanı hatası: {ex.Message}");
