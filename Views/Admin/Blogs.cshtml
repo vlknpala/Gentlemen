@@ -1,45 +1,75 @@
 @model IEnumerable<Gentlemen.Models.Blog>
 
-<div class="container mt-4">
+@{
+    ViewData["Title"] = "Blog Yazıları Yönetimi";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Blog Yazıları Yönetimi</h2>
-        <a asp-action="CreateBlog" class="btn btn-primary">Yeni Blog Yazısı Ekle</a>
+        <h1 class="h3">Blog Yazıları Yönetimi</h1>
+        <a asp-action="CreateBlog" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Yeni Blog Yazısı Ekle
+        </a>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Başlık</th>
-                    <th>Kategori</th>
-                    <th>Yazar</th>
-                    <th>Yayın Tarihi</th>
-                    <th>Görüntülenme</th>
-                    <th>İşlemler</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var blog in Model)
-                {
-                    <tr>
-                        <td>@blog.Title</td>
-                        <td>@blog.Category</td>
-                        <td>@blog.Author</td>
-                        <td>@blog.PublishDate.ToShortDateString()</td>
-                        <td>@blog.ViewCount</td>
-                        <td>
-                            <a asp-action="EditBlog" asp-route-id="@blog.Id" class="btn btn-sm btn-info">Düzenle</a>
-                            <button onclick="deleteBlog(@blog.Id)" class="btn btn-sm btn-danger">Sil</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Tüm Blog Yazıları</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped" id="blogsTable">
+                    <thead>
+                        <tr>
+                            <th>Başlık</th>
+                            <th>Kategori</th>
+                            <th>Yazar</th>
+                            <th>Yayın Tarihi</th>
+                            <th>Görüntülenme</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var blog in Model)
+                        {
+                            <tr>
+                                <td>@blog.Title</td>
+                                <td>@blog.Category</td>
+                                <td>@blog.Author</td>
+                                <td>@blog.PublishDate.ToShortDateString()</td>
+                                <td>@blog.ViewCount</td>
+                                <td>
+                                    <a asp-action="EditBlog" asp-route-id="@blog.Id" class="btn btn-sm btn-info">Düzenle</a>
+                                    <button onclick="deleteBlog(@blog.Id)" class="btn btn-sm btn-danger">Sil</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
+        $(document).ready(function() {
+            var table = $('#blogsTable').DataTable({
+                responsive: true,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+                },
+                columnDefs: [
+                    { orderable: false, targets: [5] }, // İşlemler sütunu sıralanamaz
+                    { searchable: false, targets: [5] } // İşlemler sütunu aranamaz
+                ],
+                order: [[3, 'desc']], // Yayın tarihine göre sırala
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tümü"]]
+            });
+        });
+
         function deleteBlog(id) {
             if (confirm('Bu blog yazısını silmek istediğinizden emin misiniz?')) {
                 $.post('/Admin/DeleteBlog/' + id, function(response) {

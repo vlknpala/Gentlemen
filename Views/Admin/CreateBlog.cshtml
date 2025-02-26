@@ -1,42 +1,59 @@
 @model Gentlemen.Models.Blog
 
-<div class="container mt-4">
-    <h2>Yeni Blog Yazısı Ekle</h2>
-    <form asp-action="CreateBlog" method="post" enctype="multipart/form-data">
-        <div class="form-group">
-            <label asp-for="Title">Başlık</label>
-            <input asp-for="Title" class="form-control" required />
-        </div>
-        
-        <div class="form-group mt-3">
-            <label asp-for="Category">Kategori</label>
-            <select asp-for="Category" class="form-control" required>
-                <option value="">Kategori Seçin</option>
-                <option value="Moda">Moda</option>
-                <option value="Stil">Stil</option>
-                <option value="Bakım">Bakım</option>
-                <option value="Yaşam">Yaşam</option>
-            </select>
-        </div>
+@{
+    ViewData["Title"] = "Yeni Blog Yazısı";
+    Layout = "_AdminLayout";
+}
 
-        <div class="form-group mt-3">
-            <label asp-for="Content">İçerik</label>
-            <textarea id="Content" asp-for="Content" class="form-control summernote" required></textarea>
-        </div>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Yeni Blog Yazısı Ekle</h1>
+        <a asp-action="Blogs" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Geri Dön
+        </a>
+    </div>
 
-        <div class="form-group mt-3">
-            <label>Blog Görseli</label>
-            <input type="file" name="Image" class="form-control" accept="image/*" required />
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Blog Yazısı Bilgileri</h6>
         </div>
+        <div class="card-body">
+            <form asp-action="CreateBlog" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label asp-for="Title">Başlık</label>
+                    <input asp-for="Title" class="form-control" required />
+                </div>
+                
+                <div class="form-group mt-3">
+                    <label asp-for="Category">Kategori</label>
+                    <select asp-for="Category" class="form-control" required>
+                        <option value="">Kategori Seçin</option>
+                        <option value="Moda">Moda</option>
+                        <option value="Stil">Stil</option>
+                        <option value="Bakım">Bakım</option>
+                        <option value="Yaşam">Yaşam</option>
+                    </select>
+                </div>
 
-        <div class="form-group mt-3">
-            <label asp-for="Author">Yazar</label>
-            <input asp-for="Author" class="form-control" required />
+                <div class="form-group mt-3">
+                    <label asp-for="Content">İçerik</label>
+                    <textarea id="Content" asp-for="Content" class="form-control summernote" required></textarea>
+                </div>
+
+                <div class="form-group mt-3">
+                    <label>Blog Görseli</label>
+                    <input type="file" name="Image" class="form-control" accept="image/*" required />
+                </div>
+
+                <div class="form-group mt-3">
+                    <label asp-for="Author">Yazar</label>
+                    <input asp-for="Author" class="form-control" required />
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-4">Blog Yazısını Yayınla</button>
+            </form>
         </div>
-
-        <button type="submit" class="btn btn-primary mt-4">Blog Yazısını Yayınla</button>
-        <a asp-action="Blogs" class="btn btn-secondary mt-4">İptal</a>
-    </form>
+    </div>
 </div>
 
 @section Scripts {

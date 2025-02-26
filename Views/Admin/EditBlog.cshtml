@@ -1,52 +1,69 @@
 @model Gentlemen.Models.Blog
 
-<div class="container mt-4">
-    <h2>Blog Yazısını Düzenle</h2>
-    <form asp-action="EditBlog" method="post" enctype="multipart/form-data">
-        <input type="hidden" asp-for="Id" />
-        
-        <div class="form-group">
-            <label asp-for="Title">Başlık</label>
-            <input asp-for="Title" class="form-control" required />
-        </div>
-        
-        <div class="form-group mt-3">
-            <label asp-for="Category">Kategori</label>
-            <select asp-for="Category" class="form-control" required>
-                <option value="">Kategori Seçin</option>
-                <option value="Moda">Moda</option>
-                <option value="Stil">Stil</option>
-                <option value="Bakım">Bakım</option>
-                <option value="Yaşam">Yaşam</option>
-            </select>
-        </div>
+@{
+    ViewData["Title"] = "Blog Yazısını Düzenle";
+    Layout = "_AdminLayout";
+}
 
-        <div class="form-group mt-3">
-            <label asp-for="Content">İçerik</label>
-            <textarea id="Content" asp-for="Content" class="form-control summernote" required></textarea>
-        </div>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Blog Yazısını Düzenle</h1>
+        <a asp-action="Blogs" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Geri Dön
+        </a>
+    </div>
 
-        <div class="form-group mt-3">
-            <label>Mevcut Görsel</label>
-            @if (!string.IsNullOrEmpty(Model.ImageUrl))
-            {
-                <img src="@Model.ImageUrl" alt="Blog görseli" class="img-thumbnail" style="max-height: 200px" />
-            }
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Blog Yazısı Bilgileri</h6>
         </div>
+        <div class="card-body">
+            <form asp-action="EditBlog" method="post" enctype="multipart/form-data">
+                <input type="hidden" asp-for="Id" />
+                
+                <div class="form-group">
+                    <label asp-for="Title">Başlık</label>
+                    <input asp-for="Title" class="form-control" required />
+                </div>
+                
+                <div class="form-group mt-3">
+                    <label asp-for="Category">Kategori</label>
+                    <select asp-for="Category" class="form-control" required>
+                        <option value="">Kategori Seçin</option>
+                        <option value="Moda">Moda</option>
+                        <option value="Stil">Stil</option>
+                        <option value="Bakım">Bakım</option>
+                        <option value="Yaşam">Yaşam</option>
+                    </select>
+                </div>
 
-        <div class="form-group mt-3">
-            <label>Yeni Görsel (Yüklemek istemiyorsanız boş bırakın)</label>
-            <input type="file" name="Image" class="form-control" accept="image/*" />
+                <div class="form-group mt-3">
+                    <label asp-for="Content">İçerik</label>
+                    <textarea id="Content" asp-for="Content" class="form-control summernote" required></textarea>
+                </div>
+
+                <div class="form-group mt-3">
+                    <label>Mevcut Görsel</label>
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" alt="Blog görseli" class="img-thumbnail" style="max-height: 200px" />
+                    }
+                </div>
+
+                <div class="form-group mt-3">
+                    <label>Yeni Görsel (Yüklemek istemiyorsanız boş bırakın)</label>
+                    <input type="file" name="Image" class="form-control" accept="image/*" />
+                </div>
+
+                <div class="form-group mt-3">
+                    <label asp-for="Author">Yazar</label>
+                    <input asp-for="Author" class="form-control" required />
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-4">Değişiklikleri Kaydet</button>
+            </form>
         </div>
-
-        <div class="form-group mt-3">
-            <label asp-for="Author">Yazar</label>
-            <input asp-for="Author" class="form-control" required />
-        </div>
-
-        <button type="submit" class="btn btn-primary mt-4">Değişiklikleri Kaydet</button>
-        <a asp-action="Blogs" class="btn btn-secondary mt-4">İptal</a>
-    </form>
+    </div>
 </div>
 
 @section Scripts {

@@ -1,0 +1,261 @@
+@model IEnumerable<Gentlemen.Models.StyleTip>
+
+@{
+    ViewData["Title"] = "Stil İpuçları Yönetimi";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Stil İpuçları Yönetimi</h1>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStyleTipModal">
+            <i class="fas fa-plus"></i> Yeni Stil İpucu Ekle
+        </button>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer" class="mb-4"></div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Tüm Stil İpuçları</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped" id="styleTipsTable">
+                    <thead>
+                        <tr>
+                            <th>Görsel</th>
+                            <th>Başlık</th>
+                            <th>Kategori</th>
+                            <th>Yazar</th>
+                            <th>Yayın Tarihi</th>
+                            <th>Beğeni</th>
+                            <th>Öne Çıkan</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var tip in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(tip.ImageUrl))
+                                    {
+                                        <img src="@tip.ImageUrl" alt="@tip.Title" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                                    }
+                                </td>
+                                <td>@tip.Title</td>
+                                <td>@tip.Category</td>
+                                <td>@tip.Author</td>
+                                <td>@tip.PublishDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>@tip.Likes</td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input featured-switch" type="checkbox" 
+                                               data-id="@tip.Id" @(tip.IsFeatured ? "checked" : "")>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" onclick="editStyleTip(@tip.Id)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteStyleTip(@tip.Id)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Style Tip Modal -->
+<div class="modal fade" id="addStyleTipModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Stil İpucu Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addStyleTipForm" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Başlık</label>
+                                <input type="text" class="form-control" name="Title" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">İçerik</label>
+                                <textarea class="form-control summernote" name="Content" required></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Kategori</label>
+                                <select class="form-select" name="Category" required>
+                                    <option value="">Seçiniz</option>
+                                    <option value="Giyim">Giyim</option>
+                                    <option value="Aksesuar">Aksesuar</option>
+                                    <option value="Bakım">Bakım</option>
+                                    <option value="Moda">Moda</option>
+                                    <option value="Yaşam">Yaşam</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Görsel</label>
+                                <input type="file" class="form-control" name="Image" accept="image/*" required>
+                                <div class="mt-2">
+                                    <img id="imagePreview" src="#" alt="Önizleme" style="max-width: 200px; display: none;">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Yazar</label>
+                                <input type="text" class="form-control" name="Author" required>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="IsFeatured" value="true">
+                                    <label class="form-check-label">Öne Çıkan</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // DataTables initialization
+            var table = $('#styleTipsTable').DataTable({
+                responsive: true,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+                },
+                columnDefs: [
+                    { orderable: false, targets: [0, 6, 7] }, // Görsel, Öne Çıkan ve İşlemler sütunları sıralanamaz
+                    { searchable: false, targets: [0, 6, 7] } // Görsel, Öne Çıkan ve İşlemler sütunları aranamaz
+                ],
+                order: [[4, 'desc']], // Yayın tarihine göre sırala
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tümü"]]
+            });
+
+            // Summernote initialization
+            $('.summernote').summernote({
+                height: 200,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ],
+                lang: 'tr-TR'
+            });
+
+            // Image preview
+            $('input[name="Image"]').change(function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#imagePreview').attr('src', e.target.result).show();
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Form submission
+            $('#addStyleTipForm').submit(function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+
+                $.ajax({
+                    url: '/Admin/AddStyleTip',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            showAlert('success', response.message || 'Stil ipucu başarıyla eklendi.');
+                            $('#addStyleTipModal').modal('hide');
+                            $('#addStyleTipForm')[0].reset();
+                            $('#imagePreview').hide();
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            showAlert('danger', response.message || 'Bir hata oluştu.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        showAlert('danger', 'Bir hata oluştu: ' + error);
+                    }
+                });
+            });
+
+            // Featured switch handler
+            $('.featured-switch').change(function() {
+                const id = $(this).data('id');
+                const isFeatured = $(this).prop('checked');
+
+                $.post('/Admin/ToggleStyleTipFeatured/' + id, { isFeatured: isFeatured }, function(response) {
+                    if (!response.success) {
+                        showAlert('danger', response.message || 'Öne çıkarma durumu güncellenirken bir hata oluştu.');
+                        // Switch'i eski haline getir
+                        $(this).prop('checked', !isFeatured);
+                    }
+                });
+            });
+        });
+
+        function showAlert(type, message) {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            $('#alertContainer').html(alertHtml);
+
+            setTimeout(() => {
+                $('.alert').fadeOut();
+            }, 3000);
+        }
+
+        function editStyleTip(id) {
+            // TODO: Implement edit functionality
+            window.location.href = '/Admin/EditStyleTip/' + id;
+        }
+
+        function deleteStyleTip(id) {
+            if (confirm('Bu stil ipucunu silmek istediğinizden emin misiniz?')) {
+                $.post('/Admin/DeleteStyleTip/' + id, function(response) {
+                    if (response.success) {
+                        showAlert('success', 'Stil ipucu başarıyla silindi.');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showAlert('danger', response.message || 'Silme işlemi başarısız oldu.');
+                    }
+                });
+            }
+        }
+    </script>
+} 

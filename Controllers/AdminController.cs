@@ -40,7 +40,7 @@ namespace Gentlemen.Controllers
                     HttpContext.Session.SetString("AdminUser", model.Username);
                     return RedirectToAction("Dashboard");
                 }
-
+                
                 ModelState.AddModelError("", "Geçersiz kullanıcı adı veya şifre.");
             }
             return View(model);
@@ -66,7 +66,7 @@ namespace Gentlemen.Controllers
             ViewBag.BlogCount = _context.Blogs.Count();
             ViewBag.OutfitCount = _context.Outfits.Count();
             ViewBag.StyleTipCount = _context.StyleTips.Count();
-
+            
             return View();
         }
 
@@ -363,6 +363,165 @@ namespace Gentlemen.Controllers
                 }
             }
             return View(blog);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddStyleTip([FromForm] StyleTip styleTip, IFormFile Image)
+        {
+            if (!IsAdmin())
+            {
+                _logger.LogWarning("Yetkisiz erişim denemesi - AddStyleTip");
+                return Json(new { success = false, message = "Yetkisiz erişim." });
+            }
+
+            try
+            {
+                _logger.LogInformation($"Yeni stil ipucu ekleme işlemi başladı. Başlık: {styleTip.Title}");
+
+                if (!ModelState.IsValid)
+                {
+                    var errors = string.Join("; ", ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage));
+                    _logger.LogWarning($"Model doğrulama hatası: {errors}");
+                    return Json(new { success = false, message = $"Geçersiz veri: {errors}" });
+                }
+
+                if (Image == null || Image.Length == 0)
+                {
+                    _logger.LogWarning("Görsel seçilmedi");
+                    return Json(new { success = false, message = "Lütfen bir görsel seçin." });
+                }
+
+                // Görsel yükleme
+                try
+                {
+                    _logger.LogInformation("Görsel yükleme işlemi başladı");
+                    string imageUrl = await _fileUploadService.UploadFileAsync(Image);
+                    styleTip.ImageUrl = imageUrl;
+                    _logger.LogInformation($"Görsel başarıyla yüklendi: {imageUrl}");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Görsel yükleme hatası: {ex.Message}");
+                    return Json(new { success = false, message = $"Görsel yükleme hatası: {ex.Message}" });
+                }
+
+                // Stil ipucu bilgilerini ayarla
+                styleTip.PublishDate = DateTime.Now;
+                styleTip.Likes = 0;
+
+                // Veritabanına kaydet
+                try
+                {
+                    _logger.LogInformation("Veritabanına kaydetme işlemi başladı");
+                    _context.StyleTips.Add(styleTip);
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation($"Yeni stil ipucu başarıyla eklendi. ID: {styleTip.Id}, Başlık: {styleTip.Title}");
+                    return Json(new { success = true, message = "Stil ipucu başarıyla eklendi." });
+                }
+                catch (Exception ex)
+                {
+                    // Görsel yüklendiyse sil
+                    if (!string.IsNullOrEmpty(styleTip.ImageUrl))
+                    {
+                        _fileUploadService.DeleteFile(styleTip.ImageUrl);
+                        _logger.LogInformation($"Yüklenen görsel silindi: {styleTip.ImageUrl}");
+                    }
+
+                    _logger.LogError($"Veritabanı hatası: {ex.Message}");
+                    return Json(new { success = false, message = "Veritabanı hatası oluştu." });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Beklenmeyen hata: {ex.Message}");
+                return Json(new { success = false, message = "Beklenmeyen bir hata oluştu." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleStyleTipFeatured(int id, bool isFeatured)
+        {
+            if (!IsAdmin())
+                return Json(new { success = false, message = "Yetkisiz erişim." });
+
+            try
+            {
+                var styleTip = await _context.StyleTips.FindAsync(id);
+                if (styleTip == null)
+                    return Json(new { success = false, message = "Stil ipucu bulunamadı." });
+
+                styleTip.IsFeatured = isFeatured;
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Stil ipucu öne çıkarma hatası: {ex.Message}");
+                return Json(new { success = false, message = "İşlem sırasında bir hata oluştu." });
+            }
+        }
+
+        public async Task<IActionResult> EditStyleTip(int id)
+        {
+            if (!IsAdmin())
+                return RedirectToAction("Login");
+
+            var styleTip = await _context.StyleTips.FindAsync(id);
+            if (styleTip == null)
+                return NotFound();
+
+            return View(styleTip);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditStyleTip(int id, StyleTip styleTip, IFormFile Image)
+        {
+            if (!IsAdmin())
+                return RedirectToAction("Login");
+
+            if (id != styleTip.Id)
+                return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var existingStyleTip = await _context.StyleTips.FindAsync(id);
+                    if (existingStyleTip == null)
+                        return NotFound();
+
+                    if (Image != null && Image.Length > 0)
+                    {
+                        // Delete old image if exists
+                        if (!string.IsNullOrEmpty(existingStyleTip.ImageUrl))
+                        {
+                            _fileUploadService.DeleteFile(existingStyleTip.ImageUrl);
+                        }
+
+                        string imageUrl = await _fileUploadService.UploadFileAsync(Image);
+                        existingStyleTip.ImageUrl = imageUrl;
+                    }
+
+                    existingStyleTip.Title = styleTip.Title;
+                    existingStyleTip.Content = styleTip.Content;
+                    existingStyleTip.Category = styleTip.Category;
+                    existingStyleTip.Author = styleTip.Author;
+                    existingStyleTip.IsFeatured = styleTip.IsFeatured;
+
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(StyleTips));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Stil ipucu güncellenirken bir hata oluştu: " + ex.Message);
+                }
+            }
+            return View(styleTip);
         }
     }
 }

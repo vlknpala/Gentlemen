@@ -2,24 +2,37 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Gentlemen.Data;
 using Gentlemen.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Gentlemen.Controllers
 {
     public class StyleTipController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<StyleTipController> _logger;
 
-        public StyleTipController(ApplicationDbContext context)
+        public StyleTipController(ApplicationDbContext context, ILogger<StyleTipController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index()
         {
-            var tips = await _context.StyleTips
-                .OrderByDescending(t => t.PublishDate)
-                .ToListAsync();
-            return View(tips);
+            try
+            {
+                var tips = await _context.StyleTips
+                    .OrderByDescending(t => t.PublishDate)
+                    .ToListAsync();
+                
+                _logger.LogInformation($"Toplam {tips.Count} stil ipucu listeleniyor.");
+                return View(tips);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Stil ipuçları listelenirken hata oluştu: {ex.Message}");
+                return View(new List<StyleTip>());
+            }
         }
 
         public async Task<IActionResult> Details(int id)
