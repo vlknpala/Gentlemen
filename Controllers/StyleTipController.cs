@@ -48,27 +48,6 @@ namespace Gentlemen.Controllers
             return View(tip);
         }
 
-        [HttpGet]
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(StyleTip tip)
-        {
-            if (ModelState.IsValid)
-            {
-                tip.PublishDate = DateTime.Now;
-                tip.Likes = 0;
-                _context.Add(tip);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(tip);
-        }
-
         [HttpPost]
         public async Task<IActionResult> Like(int id)
         {

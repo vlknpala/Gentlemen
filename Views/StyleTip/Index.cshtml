@@ -7,17 +7,6 @@
 <div class="container">
     <h1 class="section-title">Stil İpuçları</h1>
 
-    <div class="row mb-4">
-        <div class="col">
-            @if (Context.Session.GetString("AdminUser") != null)
-            {
-                <a href="@Url.Action("Create")" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Yeni İpucu Ekle
-                </a>
-            }
-        </div>
-    </div>
-
     <div class="row">
         @foreach (var tip in Model ?? Enumerable.Empty<StyleTip>())
         {
