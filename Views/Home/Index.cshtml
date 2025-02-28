@@ -3,12 +3,13 @@
 }
 
 <!-- Hero Section -->
-<section class="hero-section text-white text-center">
-    <div class="container">
+<section class="hero-section text-white text-center" style="background-image: url('/images/suit8.jpeg'); background-size: cover; background-position: center; background-repeat: no-repeat; height: 700px; display: flex; align-items: center; position: relative;">
+    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5);"></div>
+    <div class="container" style="position: relative; z-index: 2; color: #ffffff;">
         <div class="row justify-content-center">
             <div class="col-lg-8">
-                <h1>Tarzınızı Keşfedin</h1>
-                <p class="lead mb-4">Modern erkeğin stil rehberi. Güncel trendler, stil ipuçları ve özel kombinlerle kişisel tarzınızı oluşturun.</p>
+                <h1 style="color: #ffffff;">Centilmenliğe İlk Adım!</h1>
+                <p class="lead mb-4" style="color: #ffffff;">Modern erkeğin stil rehberi. Güncel trendler, stil ipuçları ve özel kombinlerle kişisel tarzınızı oluşturun.</p>
                 <div class="hero-buttons">
                     <a asp-controller="StyleTip" asp-action="Index" class="btn btn-primary me-3">Stil İpuçları</a>
                     <a asp-controller="Outfit" asp-action="Index" class="btn btn-outline-light">Kombinler</a>

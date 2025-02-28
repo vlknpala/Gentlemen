@@ -4,10 +4,18 @@
     ViewData["Title"] = "Kombinler";
 }
 
-<div class="container py-5">
-    <h2 class="text-center mb-4">Kombinler</h2>
+<div class="container">
+    <h1 class="section-title text-center mb-4">Kombinler</h1>
 
-    @if (Model != null && Model.Any())
+    @if (!Model?.Any() ?? true)
+    {
+        <div class="alert alert-primary text-center p-5 mb-4">
+            <i class="fas fa-info-circle fa-2x mb-3"></i>
+            <h4>Henüz Kombin Eklenmemiş</h4>
+            <p class="mb-0">Çok yakında burada harika kombinler olacak!</p>
+        </div>
+    }
+    else
     {
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             @foreach (var outfit in Model)
@@ -75,12 +83,6 @@
                     </div>
                 </div>
             }
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-info text-center">
-            Henüz kombin eklenmemiş.
         </div>
     }
 </div>
