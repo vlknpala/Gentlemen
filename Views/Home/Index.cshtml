@@ -3,13 +3,13 @@
 }
 
 <!-- Hero Section -->
-<section class="hero-section text-white text-center" style="background-image: url('/images/suit8.jpeg'); background-size: cover; background-position: center; background-repeat: no-repeat; height: 700px; display: flex; align-items: center; position: relative;">
+<section class="hero-section text-white text-center" style="background-image: url('/images/suit8.jpeg'); background-size: cover; background-position: top center; background-repeat: no-repeat; height: 700px; display: flex; align-items: flex-start; padding-top: 150px; position: relative;">
     <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5);"></div>
     <div class="container" style="position: relative; z-index: 2; color: #ffffff;">
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <h1 style="color: #ffffff;">Centilmenliğe İlk Adım!</h1>
-                <p class="lead mb-4" style="color: #ffffff;">Modern erkeğin stil rehberi. Güncel trendler, stil ipuçları ve özel kombinlerle kişisel tarzınızı oluşturun.</p>
+                <p class="lead mb-4" style="color: #ffffff;">Modern ve klasik dokunuşlara mı ihtiyacınız var? Rehberinizi ve ışığınızı bulacağınız doğru yerdesiniz.</p>
                 <div class="hero-buttons">
                     <a asp-controller="StyleTip" asp-action="Index" class="btn btn-primary me-3">Stil İpuçları</a>
                     <a asp-controller="Outfit" asp-action="Index" class="btn btn-outline-light">Kombinler</a>
@@ -27,42 +27,21 @@
             <p class="text-muted">Her ortam için mükemmel stil önerileri</p>
         </div>
         <div class="row g-4">
-            <div class="col-md-4">
-                <div class="category-card">
-                    <div class="category-image">
-                        <img src="/images/business-style.jpg" alt="İş Stili">
-                    </div>
-                    <div class="category-content">
-                        <h3>İş Stili</h3>
-                        <p class="text-muted">Profesyonel ve şık görünüm için öneriler</p>
-                        <a href="#" class="btn btn-outline-dark">Keşfet</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="category-card">
-                    <div class="category-image">
-                        <img src="/images/casual-style.jpg" alt="Günlük Stil">
-                    </div>
-                    <div class="category-content">
-                        <h3>Günlük Stil</h3>
-                        <p class="text-muted">Rahat ve trend günlük kombinler</p>
-                        <a href="#" class="btn btn-outline-dark">Keşfet</a>
+            @foreach (var category in ViewBag.Categories ?? new List<Category>())
+            {
+                <div class="col-md-4">
+                    <div class="category-card">
+                        <div class="category-image">
+                            <img src="@category.ImageUrl" alt="@category.Name">
+                        </div>
+                        <div class="category-content">
+                            <h3>@category.Name</h3>
+                            <p class="text-muted">@category.Description</p>
+                            <a href="#" class="btn btn-outline-dark">Keşfet</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="category-card">
-                    <div class="category-image">
-                        <img src="/images/special-occasions.jpg" alt="Özel Günler">
-                    </div>
-                    <div class="category-content">
-                        <h3>Özel Günler</h3>
-                        <p class="text-muted">Özel anlar için şık seçimler</p>
-                        <a href="#" class="btn btn-outline-dark">Keşfet</a>
-                    </div>
-                </div>
-            </div>
+            }
         </div>
     </div>
 </section>

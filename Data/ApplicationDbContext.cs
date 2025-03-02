@@ -15,10 +15,65 @@ namespace Gentlemen.Data
         public DbSet<Outfit> Outfits { get; set; }
         public DbSet<StyleTip> StyleTips { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<CategoryContent> CategoryContents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Category entity configuration
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.ToTable("Categories");
+                entity.Property(c => c.Name)
+                    .IsRequired()
+                    .HasMaxLength(50);
+                entity.Property(c => c.Description)
+                    .IsRequired()
+                    .HasMaxLength(200);
+                entity.Property(c => c.ImageUrl)
+                    .IsRequired();
+                entity.Property(c => c.Type)
+                    .IsRequired();
+
+                // Category - CategoryContent ilişkisi
+                entity.HasMany(c => c.Contents)
+                    .WithOne(cc => cc.Category)
+                    .HasForeignKey(cc => cc.CategoryId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // Seed default categories
+                entity.HasData(
+                    new Category
+                    {
+                        Id = 1,
+                        Name = "İş Stili",
+                        Description = "Profesyonel iş hayatı için şık ve etkileyici kombinler",
+                        ImageUrl = "/images/categories/business.jpg",
+                        Type = "Business",
+                        IsActive = true
+                    },
+                    new Category
+                    {
+                        Id = 2,
+                        Name = "Günlük Stil",
+                        Description = "Rahat ve trend günlük kombinler",
+                        ImageUrl = "/images/categories/casual.jpg",
+                        Type = "Casual",
+                        IsActive = true
+                    },
+                    new Category
+                    {
+                        Id = 3,
+                        Name = "Özel Günler",
+                        Description = "Düğün, nişan ve özel davetler için özel kombinler",
+                        ImageUrl = "/images/categories/special.jpg",
+                        Type = "Special",
+                        IsActive = true
+                    }
+                );
+            });
 
             // Blog entity configuration
             modelBuilder.Entity<Blog>(entity =>

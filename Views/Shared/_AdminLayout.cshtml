@@ -25,23 +25,28 @@
 
             <ul class="list-unstyled components">
                 <li>
-                    <a href="@Url.Action("Dashboard", "Admin")">
-                        <i class="fas fa-home"></i> Dashboard
+                    <a href="@Url.Action("Dashboard", "Admin")" aria-label="Dashboard">
+                        <i class="fas fa-home" aria-hidden="true"></i> Dashboard
                     </a>
                 </li>
                 <li>
-                    <a href="@Url.Action("Blogs", "Admin")">
-                        <i class="fas fa-blog"></i> Blog Yazıları
+                    <a href="@Url.Action("Blogs", "Admin")" aria-label="Blog Yazıları">
+                        <i class="fas fa-blog" aria-hidden="true"></i> Blog Yazıları
                     </a>
                 </li>
                 <li>
-                    <a href="@Url.Action("Outfits", "Admin")">
-                        <i class="fas fa-tshirt"></i> Kombinler
+                    <a href="@Url.Action("Outfits", "Admin")" aria-label="Kombinler">
+                        <i class="fas fa-tshirt" aria-hidden="true"></i> Kombinler
                     </a>
                 </li>
                 <li>
-                    <a href="@Url.Action("StyleTips", "Admin")">
-                        <i class="fas fa-lightbulb"></i> Stil İpuçları
+                    <a href="@Url.Action("StyleTips", "Admin")" aria-label="Stil İpuçları">
+                        <i class="fas fa-lightbulb" aria-hidden="true"></i> Stil İpuçları
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Categories", "Admin")" aria-label="Kategoriler">
+                        <i class="fas fa-tags" aria-hidden="true"></i> Kategoriler
                     </a>
                 </li>
             </ul>
@@ -51,15 +56,16 @@
         <div id="content">
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
-                    <button type="button" id="sidebarCollapse" class="btn btn-primary">
-                        <i class="fas fa-bars"></i>
+                    <button type="button" id="sidebarCollapse" class="btn btn-primary" aria-label="Toggle Sidebar" title="Menüyü Aç/Kapat">
+                        <i class="fas fa-bars" aria-hidden="true"></i>
+                        <span class="visually-hidden">Menüyü Aç/Kapat</span>
                     </button>
 
                     <div class="ms-auto">
                         <ul class="navbar-nav">
                             <li class="nav-item">
-                                <a href="@Url.Action("Logout", "Admin")" class="nav-link">
-                                    <i class="fas fa-sign-out-alt"></i> Çıkış Yap
+                                <a href="@Url.Action("Logout", "Admin")" class="nav-link" aria-label="Çıkış Yap">
+                                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i> Çıkış Yap
                                 </a>
                             </li>
                         </ul>

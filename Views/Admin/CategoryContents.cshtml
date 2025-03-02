@@ -1,0 +1,99 @@
+@model Gentlemen.Models.Category
+
+@{
+    ViewData["Title"] = $"{Model.Name} İçerikleri";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">@Model.Name İçerikleri</h1>
+        <div>
+            <a asp-action="Categories" class="btn btn-secondary me-2">
+                <i class="fas fa-arrow-left"></i> Geri Dön
+            </a>
+            <a asp-action="CreateCategoryContent" asp-route-categoryId="@Model.Id" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Yeni İçerik Ekle
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Tüm İçerikler</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped" id="contentsTable">
+                    <thead>
+                        <tr>
+                            <th>Görsel</th>
+                            <th>Başlık</th>
+                            <th>İçerik</th>
+                            <th>Oluşturulma Tarihi</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var content in Model.Contents.OrderByDescending(c => c.CreatedAt))
+                        {
+                            <tr>
+                                <td>
+                                    <img src="@content.ImageUrl" alt="@content.Title" style="width: 50px; height: 50px; object-fit: cover;" />
+                                </td>
+                                <td>@content.Title</td>
+                                <td>@(content.Content.Length > 100 ? content.Content.Substring(0, 100) + "..." : content.Content)</td>
+                                <td>@content.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>
+                                    @if (content.IsActive)
+                                    {
+                                        <span class="badge bg-success">Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Pasif</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a asp-action="EditCategoryContent" asp-route-id="@content.Id" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteContent(@content.Id)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#contentsTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Turkish.json"
+                }
+            });
+        });
+
+        function deleteContent(id) {
+            if (confirm('Bu içeriği silmek istediğinizden emin misiniz?')) {
+                $.post('/Admin/DeleteCategoryContent/' + id, function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert(response.message || 'Bir hata oluştu.');
+                    }
+                });
+            }
+        }
+    </script>
+} 
