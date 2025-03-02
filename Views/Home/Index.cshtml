@@ -27,17 +27,17 @@
             <p class="text-muted">Her ortam için mükemmel stil önerileri</p>
         </div>
         <div class="row g-4">
-            @foreach (var category in ViewBag.Categories ?? new List<Category>())
+            @foreach (var category in ViewBag.FeaturedCategories ?? new List<FeaturedCategory>())
             {
                 <div class="col-md-4">
                     <div class="category-card">
                         <div class="category-image">
-                            <img src="@category.ImageUrl" alt="@category.Name">
+                            <img src="@category.ImageUrl" alt="@category.Title">
                         </div>
                         <div class="category-content">
-                            <h3>@category.Name</h3>
+                            <h3>@category.Title</h3>
                             <p class="text-muted">@category.Description</p>
-                            <a href="#" class="btn btn-outline-dark">Keşfet</a>
+                            <a href="@category.RedirectUrl" class="btn btn-outline-dark">Keşfet</a>
                         </div>
                     </div>
                 </div>
