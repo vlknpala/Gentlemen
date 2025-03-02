@@ -8,33 +8,17 @@ namespace Gentlemen.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
+            Database.EnsureCreated();
         }
 
         public DbSet<Blog> Blogs { get; set; }
         public DbSet<Outfit> Outfits { get; set; }
         public DbSet<StyleTip> StyleTips { get; set; }
         public DbSet<User> Users { get; set; }
-        public DbSet<FeaturedCategory> FeaturedCategories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            // FeaturedCategory entity configuration
-            modelBuilder.Entity<FeaturedCategory>(entity =>
-            {
-                entity.ToTable("FeaturedCategories");
-                entity.Property(f => f.Title)
-                    .IsRequired()
-                    .HasMaxLength(100);
-                entity.Property(f => f.Description)
-                    .IsRequired();
-                entity.Property(f => f.ImageUrl)
-                    .IsRequired();
-                entity.Property(f => f.Category)
-                    .IsRequired()
-                    .HasConversion<string>();
-            });
 
             // Blog entity configuration
             modelBuilder.Entity<Blog>(entity =>

@@ -19,27 +19,20 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        // Get featured categories
-        ViewBag.FeaturedCategories = await _context.FeaturedCategories
-            .Where(c => c.IsActive)
-            .OrderBy(c => c.DisplayOrder)
-            .ToListAsync();
-
-        // Get latest style tips
+        // Son eklenen stil ipuçlarını al
         ViewBag.LatestStyleTips = await _context.StyleTips
-            .Where(s => s.IsFeatured)
-            .OrderByDescending(s => s.PublishDate)
+            .OrderByDescending(t => t.PublishDate)
             .Take(3)
             .ToListAsync();
 
-        // Get featured outfits
+        // Öne çıkan kombinleri al
         ViewBag.FeaturedOutfits = await _context.Outfits
             .Where(o => o.IsFeatured)
             .OrderByDescending(o => o.CreatedAt)
-            .Take(4)
+            .Take(2)
             .ToListAsync();
 
-        // Get latest blog posts
+        // Son blog yazılarını al
         ViewBag.LatestBlogPosts = await _context.Blogs
             .OrderByDescending(b => b.PublishDate)
             .Take(3)
