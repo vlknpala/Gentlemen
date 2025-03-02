@@ -1,4 +1,5 @@
 @model IEnumerable<Gentlemen.Models.FeaturedCategory>
+@using Gentlemen.Models
 
 @{
     ViewData["Title"] = "Öne Çıkan Kategoriler";
@@ -45,7 +46,7 @@
                             <th>Görsel</th>
                             <th>Başlık</th>
                             <th>Açıklama</th>
-                            <th>Yönlendirme</th>
+                            <th>Kategori</th>
                             <th>Durum</th>
                             <th>İşlemler</th>
                         </tr>
@@ -65,7 +66,20 @@
                                 </td>
                                 <td>@category.Title</td>
                                 <td>@category.Description</td>
-                                <td>@category.RedirectUrl</td>
+                                <td>
+                                    @switch (category.Category)
+                                    {
+                                        case OutfitCategory.GunlukKombinler:
+                                            @:Günlük Kombinler
+                                            break;
+                                        case OutfitCategory.IsKombinleri:
+                                            @:İş Kombinleri
+                                            break;
+                                        case OutfitCategory.OzelGunKombinleri:
+                                            @:Özel Gün Kombinleri
+                                            break;
+                                    }
+                                </td>
                                 <td>
                                     <div class="form-check form-switch">
                                         <input class="form-check-input status-switch" type="checkbox" 
@@ -106,6 +120,15 @@
                                 <label class="form-label">Açıklama</label>
                                 <textarea class="form-control" name="Description" rows="3" required></textarea>
                             </div>
+                            <div class="mb-3">
+                                <label class="form-label">Kategori</label>
+                                <select class="form-select" name="Category" required>
+                                    <option value="">Kategori Seçin</option>
+                                    <option value="@((int)OutfitCategory.GunlukKombinler)">Günlük Kombinler</option>
+                                    <option value="@((int)OutfitCategory.IsKombinleri)">İş Kombinleri</option>
+                                    <option value="@((int)OutfitCategory.OzelGunKombinleri)">Özel Gün Kombinleri</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -114,10 +137,6 @@
                                 <div class="mt-2">
                                     <img id="imagePreview" src="#" alt="Önizleme" style="max-width: 200px; display: none;">
                                 </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Yönlendirme Linki</label>
-                                <input type="text" class="form-control" name="RedirectUrl" required>
                             </div>
                         </div>
                     </div>
@@ -168,6 +187,8 @@
             $('#addCategoryForm').submit(function(e) {
                 e.preventDefault();
                 const formData = new FormData(this);
+                const submitButton = $(this).find('button[type="submit"]');
+                submitButton.prop('disabled', true);
                 
                 $.ajax({
                     url: '/FeaturedCategory/Add',
@@ -178,17 +199,66 @@
                     success: function(response) {
                         if (response.success) {
                             showAlert('success', response.message);
+                            
+                            // Yeni kategoriyi tabloya ekle
+                            const categoryHtml = `
+                                <tr data-id="${response.data.id}">
+                                    <td>
+                                        <i class="fas fa-grip-vertical drag-handle"></i>
+                                    </td>
+                                    <td>
+                                        <img src="${response.data.imageUrl}" alt="${response.data.title}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                                    </td>
+                                    <td>${response.data.title}</td>
+                                    <td>${response.data.description}</td>
+                                    <td>${getCategoryName(response.data.category)}</td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input status-switch" type="checkbox" 
+                                                   data-id="${response.data.id}" ${response.data.isActive ? 'checked' : ''}>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteCategory(${response.data.id})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                            
+                            $('#sortable-list').append(categoryHtml);
+                            
+                            // Formu temizle ve modalı kapat
+                            $('#addCategoryForm')[0].reset();
+                            $('#imagePreview').hide();
                             $('#addCategoryModal').modal('hide');
-                            location.reload();
+                            
+                            // Status switch handler'ı yeni eklenen eleman için bağla
+                            $('.status-switch').last().change(function() {
+                                const id = $(this).data('id');
+                                const isActive = $(this).prop('checked');
+                                updateStatus(id, isActive);
+                            });
                         } else {
                             showAlert('danger', response.message);
                         }
+                        submitButton.prop('disabled', false);
                     },
-                    error: function() {
-                        showAlert('danger', 'Bir hata oluştu.');
+                    error: function(xhr, status, error) {
+                        showAlert('danger', 'Bir hata oluştu: ' + error);
+                        submitButton.prop('disabled', false);
                     }
                 });
             });
+
+            function getCategoryName(category) {
+                switch(category) {
+                    case 0: return 'Günlük Kombinler';
+                    case 1: return 'İş Kombinleri';
+                    case 2: return 'Özel Gün Kombinleri';
+                    default: return 'Bilinmeyen Kategori';
+                }
+            }
         });
 
         function updateOrder() {

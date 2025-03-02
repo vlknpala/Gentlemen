@@ -8,8 +8,6 @@ namespace Gentlemen.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
-            Database.EnsureDeleted(); // This will delete the database
-            Database.EnsureCreated(); // This will create the database and all tables
         }
 
         public DbSet<Blog> Blogs { get; set; }
@@ -33,8 +31,9 @@ namespace Gentlemen.Data
                     .IsRequired();
                 entity.Property(f => f.ImageUrl)
                     .IsRequired();
-                entity.Property(f => f.RedirectUrl)
-                    .IsRequired();
+                entity.Property(f => f.Category)
+                    .IsRequired()
+                    .HasConversion<string>();
             });
 
             // Blog entity configuration

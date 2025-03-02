@@ -52,9 +52,10 @@ namespace Gentlemen.Controllers
                 }
 
                 // Görsel yükleme
+                string imageUrl;
                 try
                 {
-                    string imageUrl = await _fileUploadService.UploadFileAsync(Image);
+                    imageUrl = await _fileUploadService.UploadFileAsync(Image);
                     category.ImageUrl = imageUrl;
                 }
                 catch (Exception ex)
@@ -65,26 +66,41 @@ namespace Gentlemen.Controllers
                 // Kategori bilgilerini ayarla
                 category.CreatedAt = DateTime.Now;
                 category.IsActive = true;
+                category.DisplayOrder = await _context.FeaturedCategories.CountAsync(); // Yeni eklenen en sona gelsin
 
                 // Veritabanına kaydet
                 try
                 {
-                    _context.FeaturedCategories.Add(category);
+                    await _context.FeaturedCategories.AddAsync(category);
                     await _context.SaveChangesAsync();
-                    return Json(new { success = true, message = "Kategori başarıyla eklendi." });
+
+                    // Başarılı kayıt sonrası detaylı bilgi dön
+                    return Json(new { 
+                        success = true, 
+                        message = "Kategori başarıyla eklendi.",
+                        data = new {
+                            id = category.Id,
+                            title = category.Title,
+                            description = category.Description,
+                            imageUrl = category.ImageUrl,
+                            category = category.Category,
+                            isActive = category.IsActive
+                        }
+                    });
                 }
                 catch (Exception ex)
                 {
-                    if (!string.IsNullOrEmpty(category.ImageUrl))
+                    // Görsel yüklenmiş ama veritabanı kaydı başarısız olduysa görseli sil
+                    if (!string.IsNullOrEmpty(imageUrl))
                     {
-                        _fileUploadService.DeleteFile(category.ImageUrl);
+                        _fileUploadService.DeleteFile(imageUrl);
                     }
-                    return Json(new { success = false, message = "Veritabanı hatası oluştu." });
+                    return Json(new { success = false, message = $"Veritabanı hatası: {ex.Message}" });
                 }
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Beklenmeyen bir hata oluştu." });
+                return Json(new { success = false, message = $"Beklenmeyen bir hata oluştu: {ex.Message}" });
             }
         }
 

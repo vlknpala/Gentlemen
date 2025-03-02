@@ -37,7 +37,16 @@
                         <div class="category-content">
                             <h3>@category.Title</h3>
                             <p class="text-muted">@category.Description</p>
-                            <a href="@category.RedirectUrl" class="btn btn-outline-dark">Keşfet</a>
+                            @{
+                                var redirectUrl = category.Category switch
+                                {
+                                    OutfitCategory.GunlukKombinler => "/Outfit/Category/GunlukKombinler",
+                                    OutfitCategory.IsKombinleri => "/Outfit/Category/IsKombinleri",
+                                    OutfitCategory.OzelGunKombinleri => "/Outfit/Category/OzelGunKombinleri",
+                                    _ => "/Outfit"
+                                };
+                            }
+                            <a href="@redirectUrl" class="btn btn-outline-dark">Keşfet</a>
                         </div>
                     </div>
                 </div>

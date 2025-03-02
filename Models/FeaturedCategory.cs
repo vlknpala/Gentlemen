@@ -2,6 +2,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Gentlemen.Models
 {
+    public enum OutfitCategory
+    {
+        GunlukKombinler,
+        IsKombinleri,
+        OzelGunKombinleri
+    }
+
     public class FeaturedCategory
     {
         public int Id { get; set; }
@@ -16,8 +23,8 @@ namespace Gentlemen.Models
         [Required(ErrorMessage = "Görsel URL zorunludur")]
         public string ImageUrl { get; set; }
 
-        [Required(ErrorMessage = "Yönlendirme linki zorunludur")]
-        public string RedirectUrl { get; set; }
+        [Required(ErrorMessage = "Kategori seçimi zorunludur")]
+        public OutfitCategory Category { get; set; }
 
         public int DisplayOrder { get; set; }
 
