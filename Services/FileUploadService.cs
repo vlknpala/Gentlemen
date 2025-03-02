@@ -9,6 +9,7 @@ namespace Gentlemen.Services
     public interface IFileUploadService
     {
         Task<string> UploadFileAsync(IFormFile file);
+        Task<string> UploadFileAsync(IFormFile file, string folder);
         void DeleteFile(string filePath);
     }
 
@@ -31,6 +32,11 @@ namespace Gentlemen.Services
 
         public async Task<string> UploadFileAsync(IFormFile file)
         {
+            return await UploadFileAsync(file, "");
+        }
+
+        public async Task<string> UploadFileAsync(IFormFile file, string folder)
+        {
             if (file == null || file.Length == 0)
             {
                 throw new ArgumentException("No file was provided");
@@ -46,9 +52,20 @@ namespace Gentlemen.Services
 
             try
             {
+                // Create folder if specified
+                var targetFolder = _uploadsFolder;
+                if (!string.IsNullOrEmpty(folder))
+                {
+                    targetFolder = Path.Combine(_uploadsFolder, folder);
+                    if (!Directory.Exists(targetFolder))
+                    {
+                        Directory.CreateDirectory(targetFolder);
+                    }
+                }
+
                 // Create unique filename
                 var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-                var filePath = Path.Combine(_uploadsFolder, uniqueFileName);
+                var filePath = Path.Combine(targetFolder, uniqueFileName);
 
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
@@ -56,7 +73,9 @@ namespace Gentlemen.Services
                 }
 
                 // Return the relative path for web access
-                return $"/uploads/{uniqueFileName}";
+                return !string.IsNullOrEmpty(folder) 
+                    ? $"/uploads/{folder}/{uniqueFileName}"
+                    : $"/uploads/{uniqueFileName}";
             }
             catch (Exception ex)
             {
@@ -73,7 +92,10 @@ namespace Gentlemen.Services
             {
                 // Convert web path to physical path
                 var fileName = Path.GetFileName(filePath.TrimStart('/'));
-                var physicalPath = Path.Combine(_uploadsFolder, fileName);
+                var folder = Path.GetDirectoryName(filePath.TrimStart('/'))?.Replace("uploads/", "") ?? "";
+                var physicalPath = string.IsNullOrEmpty(folder) 
+                    ? Path.Combine(_uploadsFolder, fileName)
+                    : Path.Combine(_uploadsFolder, folder, fileName);
 
                 if (File.Exists(physicalPath))
                 {

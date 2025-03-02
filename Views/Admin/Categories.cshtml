@@ -1,0 +1,263 @@
+@model IEnumerable<Gentlemen.Models.Category>
+
+@{
+    ViewData["Title"] = "Kategori Yönetimi";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Kategori Yönetimi</h1>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+            <i class="fas fa-plus"></i> Yeni Kategori Ekle
+        </button>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer" class="mb-4"></div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Tüm Kategoriler</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped" id="categoriesTable">
+                    <thead>
+                        <tr>
+                            <th>Görsel</th>
+                            <th>Başlık</th>
+                            <th>Açıklama</th>
+                            <th>Durum</th>
+                            <th>Oluşturulma Tarihi</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var category in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(category.ImageUrl))
+                                    {
+                                        <img src="@category.ImageUrl" alt="@category.Title" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                                    }
+                                </td>
+                                <td>@category.Title</td>
+                                <td>@category.Description</td>
+                                <td>
+                                    <span class="badge @(category.IsActive ? "bg-success" : "bg-danger")">
+                                        @(category.IsActive ? "Aktif" : "Pasif")
+                                    </span>
+                                </td>
+                                <td>@category.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" onclick="editCategory(@category.Id)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteCategory(@category.Id)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Kategori Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addCategoryForm" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Başlık</label>
+                        <input type="text" class="form-control" name="Title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" name="Description" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Görsel</label>
+                        <input type="file" class="form-control" name="Image" accept="image/*" required>
+                        <div class="mt-2">
+                            <img id="imagePreview" src="#" alt="Önizleme" style="max-width: 200px; display: none;">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Category Modal -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Kategori Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editCategoryForm" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="Id" id="editCategoryId">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Başlık</label>
+                        <input type="text" class="form-control" name="Title" id="editCategoryTitle" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" name="Description" id="editCategoryDescription" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Görsel</label>
+                        <input type="file" class="form-control" name="Image" accept="image/*">
+                        <div class="mt-2">
+                            <img id="editImagePreview" src="#" alt="Önizleme" style="max-width: 200px;">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="IsActive" id="editCategoryIsActive">
+                            <label class="form-check-label">Aktif</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // DataTables initialization
+            var table = $('#categoriesTable').DataTable({
+                responsive: true,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+                },
+                columnDefs: [
+                    { orderable: false, targets: [0, 5] }
+                ],
+                order: [[4, 'desc']]
+            });
+
+            // Image preview for add form
+            $('input[name="Image"]').change(function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#imagePreview').attr('src', e.target.result).show();
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Add Category Form Submit
+            $('#addCategoryForm').submit(function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                
+                $.ajax({
+                    url: '/Admin/AddCategory',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            showAlert('success', response.message);
+                            $('#addCategoryModal').modal('hide');
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showAlert('danger', response.message);
+                        }
+                    },
+                    error: function() {
+                        showAlert('danger', 'Bir hata oluştu.');
+                    }
+                });
+            });
+
+            // Edit Category Form Submit
+            $('#editCategoryForm').submit(function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const id = $('#editCategoryId').val();
+                
+                $.ajax({
+                    url: '/Admin/UpdateCategory/' + id,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            showAlert('success', response.message);
+                            $('#editCategoryModal').modal('hide');
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showAlert('danger', response.message);
+                        }
+                    },
+                    error: function() {
+                        showAlert('danger', 'Bir hata oluştu.');
+                    }
+                });
+            });
+        });
+
+        function showAlert(type, message) {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            $('#alertContainer').html(alertHtml);
+        }
+
+        function editCategory(id) {
+            $.get('/Admin/GetCategory/' + id, function(category) {
+                $('#editCategoryId').val(category.id);
+                $('#editCategoryTitle').val(category.title);
+                $('#editCategoryDescription').val(category.description);
+                $('#editCategoryIsActive').prop('checked', category.isActive);
+                $('#editImagePreview').attr('src', category.imageUrl);
+                $('#editCategoryModal').modal('show');
+            });
+        }
+
+        function deleteCategory(id) {
+            if (confirm('Bu kategoriyi silmek istediğinizden emin misiniz?')) {
+                $.post('/Admin/DeleteCategory/' + id, function(response) {
+                    if (response.success) {
+                        showAlert('success', response.message);
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showAlert('danger', response.message);
+                    }
+                });
+            }
+        }
+    </script>
+} 

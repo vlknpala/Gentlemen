@@ -8,13 +8,13 @@ namespace Gentlemen.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
-            Database.EnsureCreated();
         }
 
         public DbSet<Blog> Blogs { get; set; }
         public DbSet<Outfit> Outfits { get; set; }
         public DbSet<StyleTip> StyleTips { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Category> Categories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -88,6 +88,37 @@ namespace Gentlemen.Data
                     .IsRequired()
                     .HasMaxLength(20);
             });
+
+            // Varsayılan kategorileri ekle
+            modelBuilder.Entity<Category>().HasData(
+                new Category
+                {
+                    Id = 1,
+                    Title = "İş Stili",
+                    Description = "Profesyonel ve şık görünüm için öneriler",
+                    ImageUrl = "/images/business-style.jpg",
+                    Slug = "is-stili",
+                    IsActive = true
+                },
+                new Category
+                {
+                    Id = 2,
+                    Title = "Günlük Stil",
+                    Description = "Rahat ve trend günlük kombinler",
+                    ImageUrl = "/images/casual-style.jpg",
+                    Slug = "gunluk-stil",
+                    IsActive = true
+                },
+                new Category
+                {
+                    Id = 3,
+                    Title = "Özel Günler",
+                    Description = "Özel anlar için şık seçimler",
+                    ImageUrl = "/images/special-occasions.jpg",
+                    Slug = "ozel-gunler",
+                    IsActive = true
+                }
+            );
         }
     }
 }

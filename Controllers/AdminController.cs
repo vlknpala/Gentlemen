@@ -511,5 +511,97 @@ namespace Gentlemen.Controllers
             }
             return View(styleTip);
         }
+
+        public async Task<IActionResult> Categories()
+        {
+            var categories = await _context.Categories.ToListAsync();
+            return View(categories);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddCategory([FromForm] Category category, IFormFile Image)
+        {
+            if (Image != null)
+            {
+                var imageUrl = await _fileUploadService.UploadFileAsync(Image, "categories");
+                category.ImageUrl = imageUrl;
+            }
+
+            category.Slug = category.Title.ToLower()
+                .Replace(" ", "-")
+                .Replace("ı", "i")
+                .Replace("ğ", "g")
+                .Replace("ü", "u")
+                .Replace("ş", "s")
+                .Replace("ö", "o")
+                .Replace("ç", "c");
+
+            category.CreatedAt = DateTime.Now;
+            category.IsActive = true;
+
+            await _context.Categories.AddAsync(category);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Kategori başarıyla eklendi." });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateCategory(int id, [FromForm] Category category, IFormFile Image)
+        {
+            var existingCategory = await _context.Categories.FindAsync(id);
+            if (existingCategory == null)
+            {
+                return Json(new { success = false, message = "Kategori bulunamadı." });
+            }
+
+            if (Image != null)
+            {
+                var imageUrl = await _fileUploadService.UploadFileAsync(Image, "categories");
+                existingCategory.ImageUrl = imageUrl;
+            }
+
+            existingCategory.Title = category.Title;
+            existingCategory.Description = category.Description;
+            existingCategory.IsActive = category.IsActive;
+            existingCategory.Slug = category.Title.ToLower()
+                .Replace(" ", "-")
+                .Replace("ı", "i")
+                .Replace("ğ", "g")
+                .Replace("ü", "u")
+                .Replace("ş", "s")
+                .Replace("ö", "o")
+                .Replace("ç", "c");
+
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Kategori başarıyla güncellendi." });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteCategory(int id)
+        {
+            var category = await _context.Categories.FindAsync(id);
+            if (category == null)
+            {
+                return Json(new { success = false, message = "Kategori bulunamadı." });
+            }
+
+            _context.Categories.Remove(category);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Kategori başarıyla silindi." });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCategory(int id)
+        {
+            var category = await _context.Categories.FindAsync(id);
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return Json(category);
+        }
     }
 }

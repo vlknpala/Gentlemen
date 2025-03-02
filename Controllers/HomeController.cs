@@ -19,6 +19,12 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
+        var categories = await _context.Categories
+            .Where(c => c.IsActive)
+            .ToListAsync();
+
+        ViewBag.Categories = categories;
+
         // Son eklenen stil ipuçlarını al
         ViewBag.LatestStyleTips = await _context.StyleTips
             .OrderByDescending(t => t.PublishDate)
