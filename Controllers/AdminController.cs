@@ -140,10 +140,20 @@ namespace Gentlemen.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    var errors = string.Join("; ", ModelState.Values
-                        .SelectMany(v => v.Errors)
-                        .Select(e => e.ErrorMessage));
-                    return Json(new { success = false, message = $"Geçersiz veri: {errors}" });
+                    // IsFeatured için olan hata mesajını yoksay
+                    if (ModelState["IsFeatured"] != null && ModelState["IsFeatured"].Errors.Count > 0)
+                    {
+                        ModelState["IsFeatured"].Errors.Clear();
+                    }
+
+                    // Hala hata varsa
+                    if (!ModelState.IsValid)
+                    {
+                        var errors = string.Join("; ", ModelState.Values
+                            .SelectMany(v => v.Errors)
+                            .Select(e => e.ErrorMessage));
+                        return Json(new { success = false, message = $"Geçersiz veri: {errors}" });
+                    }
                 }
 
                 if (Image == null || Image.Length == 0)
@@ -165,7 +175,9 @@ namespace Gentlemen.Controllers
                 // Kombin bilgilerini ayarla
                 outfit.CreatedAt = DateTime.Now;
                 outfit.Likes = 0;
-                outfit.IsFeatured = false;
+
+                // IsFeatured değerini form verilerinden manuel olarak al
+                outfit.IsFeatured = Request.Form["IsFeatured"] == "on";
 
                 // Veritabanına kaydet
                 try
@@ -196,6 +208,30 @@ namespace Gentlemen.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> ToggleOutfitFeatured(int id, bool isFeatured)
+        {
+            if (!IsAdmin())
+                return Json(new { success = false, message = "Yetkisiz erişim." });
+
+            try
+            {
+                var outfit = await _context.Outfits.FindAsync(id);
+                if (outfit == null)
+                    return Json(new { success = false, message = "Kombin bulunamadı." });
+
+                outfit.IsFeatured = isFeatured;
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Kombin öne çıkarma hatası: {ex.Message}");
+                return Json(new { success = false, message = "İşlem sırasında bir hata oluştu." });
+            }
+        }
+
+        [HttpPost]
         public async Task<IActionResult> DeleteOutfit(int id)
         {
             if (!IsAdmin())
@@ -214,6 +250,87 @@ namespace Gentlemen.Controllers
             await _context.SaveChangesAsync();
 
             return Json(new { success = true });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetOutfit(int id)
+        {
+            if (!IsAdmin())
+                return Json(new { success = false, message = "Yetkisiz erişim." });
+
+            var outfit = await _context.Outfits.FindAsync(id);
+            if (outfit == null)
+                return Json(new { success = false, message = "Kombin bulunamadı." });
+
+            return Json(new { success = true, outfit = outfit });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditOutfit([FromForm] Outfit outfit, IFormFile? Image)
+        {
+            if (!IsAdmin())
+                return Json(new { success = false, message = "Yetkisiz erişim." });
+
+            try
+            {
+                // IsFeatured için olan hata mesajını yoksay
+                if (ModelState["IsFeatured"] != null && ModelState["IsFeatured"].Errors.Count > 0)
+                {
+                    ModelState["IsFeatured"].Errors.Clear();
+                }
+
+                var existingOutfit = await _context.Outfits.FindAsync(outfit.Id);
+                if (existingOutfit == null)
+                    return Json(new { success = false, message = "Kombin bulunamadı." });
+
+                // Mevcut görsel URL'sini sakla
+                string oldImageUrl = existingOutfit.ImageUrl;
+
+                // Yeni görsel yüklendiyse
+                if (Image != null && Image.Length > 0)
+                {
+                    try
+                    {
+                        string imageUrl = await _fileUploadService.UploadFileAsync(Image);
+                        outfit.ImageUrl = imageUrl;
+
+                        // Eski görseli sil
+                        if (!string.IsNullOrEmpty(oldImageUrl))
+                        {
+                            _fileUploadService.DeleteFile(oldImageUrl);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        return Json(new { success = false, message = $"Görsel yükleme hatası: {ex.Message}" });
+                    }
+                }
+                else
+                {
+                    // Görsel değiştirilmediyse mevcut görseli kullan
+                    outfit.ImageUrl = oldImageUrl;
+                }
+
+                // Değiştirilmeyen alanları güncelle
+                outfit.CreatedAt = existingOutfit.CreatedAt;
+                outfit.Likes = existingOutfit.Likes;
+
+                // IsFeatured değerini form verilerinden manuel olarak al
+                outfit.IsFeatured = Request.Form["IsFeatured"] == "on";
+
+                // Veritabanını güncelle
+                _context.Entry(existingOutfit).State = EntityState.Detached;
+                _context.Entry(outfit).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation($"Kombin güncellendi: {outfit.Title}");
+                return Json(new { success = true, message = "Kombin başarıyla güncellendi." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Kombin güncelleme hatası: {ex.Message}");
+                return Json(new { success = false, message = "Beklenmeyen bir hata oluştu." });
+            }
         }
 
         [HttpPost]

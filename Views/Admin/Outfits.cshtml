@@ -32,6 +32,7 @@
                             <th>Durum</th>
                             <th>Fiyat</th>
                             <th>Beğeni</th>
+                            <th>Öne Çıkan</th>
                             <th>Eklenme Tarihi</th>
                             <th>İşlemler</th>
                         </tr>
@@ -52,6 +53,13 @@
                                 <td>@outfit.Occasion</td>
                                 <td>@outfit.EstimatedPrice.ToString("C")</td>
                                 <td>@outfit.Likes</td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="featured-@outfit.Id"
+                                               @(outfit.IsFeatured ? "checked" : "")
+                                               onchange="toggleFeatured(@outfit.Id, this.checked)">
+                                    </div>
+                                </td>
                                 <td>@outfit.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
                                 <td>
                                     <a href="javascript:void(0)" class="btn btn-sm btn-info" onclick="editOutfit(@outfit.Id)">
@@ -133,6 +141,14 @@
                                 <label class="form-label">Tahmini Fiyat</label>
                                 <input type="number" class="form-control" name="EstimatedPrice" step="0.01" required>
                             </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="IsFeatured" id="addIsFeatured">
+                                    <label class="form-check-label" for="addIsFeatured">
+                                        Öne Çıkan
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="mb-3">
@@ -156,6 +172,100 @@
     </div>
 </div>
 
+<!-- Edit Outfit Modal -->
+<div class="modal fade" id="editOutfitModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Kombin Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editOutfitForm" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="Id" id="editOutfitId">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Başlık</label>
+                                <input type="text" class="form-control" name="Title" id="editTitle" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Açıklama</label>
+                                <textarea class="form-control" name="Description" id="editDescription" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Görsel</label>
+                                <input type="file" class="form-control" name="Image" id="editImage" accept="image/*">
+                                <small class="form-text text-muted">Yeni görsel yüklemezseniz mevcut görsel kullanılacaktır.</small>
+                                <div class="mt-2">
+                                    <img id="editImagePreview" src="#" alt="Önizleme" style="max-width: 200px; display: none;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Sezon</label>
+                                <select class="form-select" name="Season" id="editSeason" required>
+                                    <option value="">Seçiniz</option>
+                                    <option value="Yaz">Yaz</option>
+                                    <option value="Kış">Kış</option>
+                                    <option value="İlkbahar">İlkbahar</option>
+                                    <option value="Sonbahar">Sonbahar</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Stil</label>
+                                <select class="form-select" name="Style" id="editStyle" required>
+                                    <option value="">Seçiniz</option>
+                                    <option value="Casual">Günlük</option>
+                                    <option value="Business">İş</option>
+                                    <option value="Sport">Spor</option>
+                                    <option value="Evening">Gece</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Durum</label>
+                                <select class="form-select" name="Occasion" id="editOccasion">
+                                    <option value="">Seçiniz</option>
+                                    <option value="Daily">Günlük</option>
+                                    <option value="Work">İş</option>
+                                    <option value="Party">Parti</option>
+                                    <option value="Wedding">Düğün</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Tahmini Fiyat</label>
+                                <input type="number" class="form-control" name="EstimatedPrice" id="editEstimatedPrice" step="0.01" required>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="IsFeatured" id="editIsFeatured">
+                                    <label class="form-check-label" for="editIsFeatured">
+                                        Öne Çıkan
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kıyafet Parçaları</label>
+                        <div id="editClothingItemsContainer">
+                            <!-- Kıyafet parçaları JavaScript ile doldurulacak -->
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="addEditItem">
+                            <i class="fas fa-plus"></i> Yeni Parça Ekle
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         $(document).ready(function() {
@@ -173,7 +283,7 @@
                 lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tümü"]]
             });
 
-            // Image preview
+            // Image preview for add form
             $('input[name="Image"]').change(function() {
                 const file = this.files[0];
                 if (file) {
@@ -185,7 +295,19 @@
                 }
             });
 
-            // Add clothing item
+            // Image preview for edit form
+            $('#editImage').change(function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#editImagePreview').attr('src', e.target.result).show();
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Add clothing item in add form
             $('.add-item').click(function() {
                 const itemCount = $('#clothingItemsContainer .input-group').length;
                 const newItem = `
@@ -199,12 +321,26 @@
                 $('#clothingItemsContainer').append(newItem);
             });
 
+            // Add clothing item in edit form
+            $('#addEditItem').click(function() {
+                const itemCount = $('#editClothingItemsContainer .input-group').length;
+                const newItem = `
+                    <div class="input-group mb-2">
+                        <input type="text" name="ClothingItems[${itemCount}]" class="form-control" placeholder="Örn: Siyah Blazer Ceket" required>
+                        <button type="button" class="btn btn-outline-danger remove-item">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                $('#editClothingItemsContainer').append(newItem);
+            });
+
             // Remove clothing item
             $(document).on('click', '.remove-item', function() {
                 $(this).closest('.input-group').remove();
             });
 
-            // Form submission
+            // Form submission for add
             $('#addOutfitForm').submit(function(e) {
                 e.preventDefault();
 
@@ -250,6 +386,50 @@
                     }
                 });
             });
+
+            // Form submission for edit
+            $('#editOutfitForm').submit(function(e) {
+                e.preventDefault();
+
+                // Form verilerini topla
+                const formData = new FormData(this);
+
+                // Kıyafet parçalarını düzenle
+                const clothingItems = [];
+                $('#editClothingItemsContainer input[type="text"]').each(function() {
+                    if (this.value.trim() !== '') {
+                        clothingItems.push(this.value.trim());
+                    }
+                });
+                formData.delete('ClothingItems');
+                clothingItems.forEach((item, index) => {
+                    formData.append(`ClothingItems[${index}]`, item);
+                });
+
+                // AJAX isteği gönder
+                $.ajax({
+                    url: '/Admin/EditOutfit',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            showAlert('success', response.message || 'Kombin başarıyla güncellendi.');
+                            $('#editOutfitModal').modal('hide');
+                            // 1.5 saniye sonra sayfayı yenile
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            showAlert('danger', response.message || 'Bir hata oluştu.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        showAlert('danger', 'Bir hata oluştu: ' + error);
+                    }
+                });
+            });
         });
 
         function showAlert(type, message) {
@@ -268,7 +448,64 @@
         }
 
         function editOutfit(id) {
-            // TODO: Implement edit functionality
+            // Kombin verilerini getir
+            $.get('/Admin/GetOutfit/' + id, function(response) {
+                if (response.success) {
+                    const outfit = response.outfit;
+
+                    // Form alanlarını doldur
+                    $('#editOutfitId').val(outfit.id);
+                    $('#editTitle').val(outfit.title);
+                    $('#editDescription').val(outfit.description);
+                    $('#editSeason').val(outfit.season);
+                    $('#editStyle').val(outfit.style);
+                    $('#editOccasion').val(outfit.occasion);
+                    $('#editEstimatedPrice').val(outfit.estimatedPrice);
+                    $('#editIsFeatured').prop('checked', outfit.isFeatured);
+
+                    // Mevcut görseli göster
+                    if (outfit.imageUrl) {
+                        $('#editImagePreview').attr('src', outfit.imageUrl).show();
+                    } else {
+                        $('#editImagePreview').hide();
+                    }
+
+                    // Kıyafet parçalarını temizle ve yeniden doldur
+                    $('#editClothingItemsContainer').empty();
+
+                    if (outfit.clothingItems && outfit.clothingItems.length > 0) {
+                        outfit.clothingItems.forEach((item, index) => {
+                            const itemHtml = `
+                                <div class="input-group mb-2">
+                                    <input type="text" name="ClothingItems[${index}]" class="form-control" value="${item}" required>
+                                    <button type="button" class="btn btn-outline-danger remove-item">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            `;
+                            $('#editClothingItemsContainer').append(itemHtml);
+                        });
+                    } else {
+                        // Eğer kıyafet parçası yoksa boş bir tane ekle
+                        const emptyItem = `
+                            <div class="input-group mb-2">
+                                <input type="text" name="ClothingItems[0]" class="form-control" placeholder="Örn: Siyah Blazer Ceket" required>
+                                <button type="button" class="btn btn-outline-danger remove-item">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        `;
+                        $('#editClothingItemsContainer').append(emptyItem);
+                    }
+
+                    // Modalı göster
+                    $('#editOutfitModal').modal('show');
+                } else {
+                    showAlert('danger', response.message || 'Kombin bilgileri alınamadı.');
+                }
+            }).fail(function() {
+                showAlert('danger', 'Sunucu ile iletişim kurulamadı.');
+            });
         }
 
         function deleteOutfit(id) {
@@ -282,6 +519,22 @@
                     }
                 });
             }
+        }
+
+        function toggleFeatured(id, isFeatured) {
+            $.post('/Admin/ToggleOutfitFeatured', { id: id, isFeatured: isFeatured }, function(response) {
+                if (response.success) {
+                    showAlert('success', isFeatured ? 'Kombin öne çıkarıldı.' : 'Kombin öne çıkarılmadı.');
+                } else {
+                    showAlert('danger', response.message || 'İşlem başarısız oldu.');
+                    // Başarısız olursa checkbox'ı eski haline getir
+                    $('#featured-' + id).prop('checked', !isFeatured);
+                }
+            }).fail(function() {
+                showAlert('danger', 'Sunucu ile iletişim kurulamadı.');
+                // Başarısız olursa checkbox'ı eski haline getir
+                $('#featured-' + id).prop('checked', !isFeatured);
+            });
         }
     </script>
 }
