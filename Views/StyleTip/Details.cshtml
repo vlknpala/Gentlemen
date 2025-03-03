@@ -30,7 +30,15 @@
                         <i class="fas fa-calendar"></i> @Model.PublishDate.ToString("dd.MM.yyyy")
                     </span>
                     <span class="me-3">
-                        <i class="fas fa-folder"></i> @Model.Category
+                        <i class="fas fa-folder"></i>
+                        @if (Model.CategoryObject != null)
+                        {
+                            @Model.CategoryObject.Title
+                        }
+                        else
+                        {
+                            @Model.Category
+                        }
                     </span>
                     <span>
                         <i class="fas fa-heart"></i> @Model.Likes beğeni
@@ -78,7 +86,7 @@
             $('.like-button').click(function () {
                 var button = $(this);
                 var tipId = button.data('tip-id');
-                
+
                 $.post('/StyleTip/Like/' + tipId, function (response) {
                     if (response.success) {
                         button.find('.like-count').text('(' + response.likes + ')');
@@ -88,4 +96,4 @@
             });
         });
     </script>
-} 
+}

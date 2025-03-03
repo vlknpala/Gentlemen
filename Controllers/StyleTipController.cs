@@ -22,9 +22,10 @@ namespace Gentlemen.Controllers
             try
             {
                 var tips = await _context.StyleTips
+                    .Include(t => t.CategoryObject)
                     .OrderByDescending(t => t.PublishDate)
                     .ToListAsync();
-                
+
                 _logger.LogInformation($"Toplam {tips.Count} stil ipucu listeleniyor.");
                 return View(tips);
             }
@@ -38,6 +39,7 @@ namespace Gentlemen.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var tip = await _context.StyleTips
+                .Include(t => t.CategoryObject)
                 .FirstOrDefaultAsync(t => t.Id == id);
 
             if (tip == null)
@@ -65,6 +67,7 @@ namespace Gentlemen.Controllers
         public async Task<IActionResult> Featured()
         {
             var featuredTips = await _context.StyleTips
+                .Include(t => t.CategoryObject)
                 .Where(t => t.IsFeatured)
                 .OrderByDescending(t => t.PublishDate)
                 .Take(5)
@@ -72,13 +75,31 @@ namespace Gentlemen.Controllers
             return View("Index", featuredTips);
         }
 
-        public async Task<IActionResult> Category(string category)
+        public async Task<IActionResult> Category(string slug)
         {
+            if (string.IsNullOrEmpty(slug))
+            {
+                return RedirectToAction("Index");
+            }
+
+            // Önce kategoriyi bul
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Slug == slug);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            // Kategoriye ait stil ipuçlarını getir
             var tips = await _context.StyleTips
-                .Where(t => t.Category == category)
+                .Include(t => t.CategoryObject)
+                .Where(t => t.CategoryId == category.Id || t.Category == category.Title)
                 .OrderByDescending(t => t.PublishDate)
                 .ToListAsync();
+
+            ViewBag.CategoryName = category.Title;
             return View("Index", tips);
         }
     }
-} 
+}

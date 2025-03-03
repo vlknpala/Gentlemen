@@ -50,7 +50,16 @@
                                             </small>
                                         </div>
                                         <div>
-                                            <span class="badge bg-primary mb-2">@tip.Category</span>
+                                            <span class="badge bg-primary mb-2">
+                                                @if (tip.CategoryObject != null)
+                                                {
+                                                    @tip.CategoryObject.Title
+                                                }
+                                                else
+                                                {
+                                                    @tip.Category
+                                                }
+                                            </span>
                                             <br />
                                             <button class="btn btn-outline-danger btn-sm like-button" data-tip-id="@tip.Id">
                                                 <i class="fas fa-heart"></i> <span class="like-count">@tip.Likes</span>
@@ -76,7 +85,7 @@
             $('.like-button').click(function () {
                 var button = $(this);
                 var tipId = button.data('tip-id');
-                
+
                 $.post('/StyleTip/Like/' + tipId, function (response) {
                     if (response.success) {
                         button.find('.like-count').text(response.likes);
@@ -86,4 +95,4 @@
             });
         });
     </script>
-} 
+}

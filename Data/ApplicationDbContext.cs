@@ -61,10 +61,14 @@ namespace Gentlemen.Data
                     .HasMaxLength(200);
                 entity.Property(s => s.Content)
                     .IsRequired();
-                entity.Property(s => s.Category)
-                    .IsRequired();
+                entity.Property(s => s.Category);
                 entity.Property(s => s.Author)
                     .IsRequired();
+
+                entity.HasOne(s => s.CategoryObject)
+                    .WithMany(c => c.StyleTips)
+                    .HasForeignKey(s => s.CategoryId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             // User entity configuration
