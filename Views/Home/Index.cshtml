@@ -26,22 +26,27 @@
             <h2>Öne Çıkan Kategoriler</h2>
             <p class="text-muted">Her ortam için mükemmel stil önerileri</p>
         </div>
-        <div class="row g-4">
-            @foreach (var category in ViewBag.Categories ?? new List<Category>())
-            {
-                <div class="col-md-4">
-                    <div class="category-card">
-                        <div class="category-image">
-                            <img src="@category.ImageUrl" alt="@category.Title">
-                        </div>
-                        <div class="category-content">
-                            <h3>@category.Title</h3>
-                            <p class="text-muted">@category.Description</p>
-                            <a href="@Url.Action("Category", "StyleTip", new { slug = category.Slug })" class="btn btn-outline-dark">Keşfet</a>
+        <div class="swiper categoriesSwiper">
+            <div class="swiper-wrapper">
+                @foreach (var category in ViewBag.Categories ?? new List<Category>())
+                {
+                    <div class="swiper-slide">
+                        <div class="category-card">
+                            <div class="category-image">
+                                <img src="@category.ImageUrl" alt="@category.Title">
+                            </div>
+                            <div class="category-content">
+                                <h3>@category.Title</h3>
+                                <p class="text-muted">@category.Description</p>
+                                <a href="@Url.Action("Category", "StyleTip", new { slug = category.Slug })" class="btn btn-outline-dark">Keşfet</a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            }
+                }
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
         </div>
     </div>
 </section>
@@ -152,12 +157,26 @@
 <section class="newsletter py-5">
     <div class="container">
         <div class="newsletter-content text-center">
-            <h2>Bültenimize Abone Olun</h2>
-            <p class="text-muted mb-4">En yeni stil ipuçları ve trendler için bültenimize abone olun.</p>
+            <div class="newsletter-header mb-4">
+                <h2 class="newsletter-title playfair mb-3">Stil Dünyasına Katılın</h2>
+                <p class="newsletter-description">Özel içerikler, yeni koleksiyonlar ve stil ipuçları için bültenimize abone olun.</p>
+            </div>
             <form class="newsletter-form">
-                <div class="input-group">
-                    <input type="email" class="form-control" placeholder="E-posta adresiniz">
-                    <button class="btn btn-primary" type="submit">Abone Ol</button>
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="newsletter-input-group">
+                            <div class="input-group mb-3">
+                                <input type="email" class="form-control" placeholder="E-posta adresinizi giriniz" required>
+                            </div>
+                            <button class="btn btn-dark w-100" type="submit">
+                                Abone Ol <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                            <small class="form-text text-muted mt-3">
+                                <i class="fas fa-shield-alt me-1"></i> 
+                                Bilgileriniz güvende. Asla spam göndermeyeceğiz.
+                            </small>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>
@@ -168,7 +187,7 @@
 <div class="simple-footer py-4">
     <div class="container">
         <div class="row">
-            <div class="col-lg-3">
+            <div class="col-lg-4">
                 <h5>Gentlemen</h5>
                 <p class="text-muted">Stil sahibi erkeklerin ilham kaynağı.</p>
                 <div class="social-links">
@@ -178,7 +197,7 @@
                     <a href="#" class="text-danger"><i class="fab fa-pinterest"></i></a>
                 </div>
             </div>
-            <div class="col-lg-3">
+            <div class="col-lg-4">
                 <h5>Hızlı Bağlantılar</h5>
                 <ul class="list-unstyled">
                     <li><a href="/" class="text-muted">Ana Sayfa</a></li>
@@ -187,7 +206,7 @@
                     <li><a href="/Blog" class="text-muted">Blog</a></li>
                 </ul>
             </div>
-            <div class="col-lg-3">
+            <div class="col-lg-4">
                 <h5>Kategoriler</h5>
                 <ul class="list-unstyled">
                     <li><a href="#" class="text-muted">İş Stili</a></li>
@@ -196,14 +215,230 @@
                     <li><a href="#" class="text-muted">Aksesuarlar</a></li>
                 </ul>
             </div>
-            <div class="col-lg-3">
-                <h5>Bülten</h5>
-                <p class="text-muted">En yeni stil ipuçları ve trendler için bültenimize abone olun.</p>
-                <div class="input-group">
-                    <input type="email" class="form-control" placeholder="E-posta adresiniz">
-                    <button class="btn btn-primary">Abone Ol</button>
-                </div>
-            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        var swiper = new Swiper(".categoriesSwiper", {
+            slidesPerView: 1,
+            spaceBetween: 30,
+            loop: true,
+            pagination: {
+                el: ".swiper-pagination",
+                clickable: true,
+            },
+            navigation: {
+                nextEl: ".swiper-button-next",
+                prevEl: ".swiper-button-prev",
+            },
+            breakpoints: {
+                640: {
+                    slidesPerView: 2,
+                },
+                1024: {
+                    slidesPerView: 3,
+                },
+            },
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+            },
+        });
+    </script>
+}
+
+<style>
+    .categoriesSwiper {
+        padding: 20px 50px;
+        position: relative;
+    }
+
+    .swiper-button-next,
+    .swiper-button-prev {
+        color: #333;
+        background: rgba(255, 255, 255, 0.9);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .swiper-button-next:after,
+    .swiper-button-prev:after {
+        font-size: 18px;
+    }
+
+    .swiper-pagination-bullet {
+        background: #333;
+    }
+
+    .swiper-pagination-bullet-active {
+        background: #000;
+    }
+
+    .category-card {
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        height: 100%;
+    }
+
+    .category-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .category-image {
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .category-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .category-card:hover .category-image img {
+        transform: scale(1.05);
+    }
+
+    .category-content {
+        padding: 20px;
+        text-align: center;
+    }
+
+    .category-content h3 {
+        margin-bottom: 10px;
+        font-size: 1.5rem;
+    }
+
+    .category-content p {
+        margin-bottom: 20px;
+        color: #666;
+    }
+
+    .btn-outline-dark {
+        border-width: 2px;
+        font-weight: 500;
+        padding: 8px 25px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-dark:hover {
+        background-color: #1a1a1a;
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    /* Newsletter Styles */
+    .newsletter {
+        background: linear-gradient(to right, #f8f9fa, #ffffff);
+        border-radius: 10px;
+        margin: 2rem 0;
+        padding: 3rem 0;
+    }
+
+    .newsletter-title {
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        letter-spacing: -0.5px;
+    }
+
+    .newsletter-description {
+        font-size: 1.1rem;
+        color: #666;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    .newsletter-input-group {
+        position: relative;
+        max-width: 500px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .newsletter .input-group {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border-radius: 15px;
+        overflow: hidden;
+        background: #fff;
+        height: 60px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    .newsletter .form-control {
+        border: none;
+        padding: 20px 30px;
+        font-size: 1.1rem;
+        background: #fff;
+        height: 60px;
+        width: 100%;
+    }
+
+    .newsletter .form-control:focus {
+        box-shadow: none;
+        background: #fff;
+        outline: none;
+    }
+
+    .newsletter .btn {
+        padding: 15px 0;
+        font-weight: 500;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        font-size: 1.1rem;
+        background-color: #1a1a1a;
+        color: #fff;
+        border: none;
+        height: 55px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .newsletter .btn:hover {
+        background-color: #333;
+        transform: translateY(-2px);
+    }
+
+    @@media (max-width: 768px) {
+        .newsletter-title {
+            font-size: 2rem;
+        }
+        
+        .newsletter-description {
+            font-size: 1rem;
+            padding: 0 1rem;
+        }
+
+        .newsletter-input-group {
+            max-width: 100%;
+            padding: 0 1rem;
+        }
+
+        .newsletter .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .newsletter .form-control {
+            border-radius: 12px;
+            margin-bottom: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .newsletter .btn {
+            width: 100%;
+            border-radius: 12px;
+        }
+    }
+</style>
