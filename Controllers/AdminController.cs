@@ -115,6 +115,21 @@ namespace Gentlemen.Controllers
             return View(styleTips);
         }
 
+        public async Task<IActionResult> Outfits()
+        {
+            if (!IsAdmin())
+                return RedirectToAction("Login");
+
+            var outfits = await _context.Outfits
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+
+            // Sayfa yüklendiğinde kaç kombin olduğunu logla
+            _logger.LogInformation($"Toplam {outfits.Count} kombin listeleniyor.");
+
+            return View(outfits);
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddOutfit([FromForm] Outfit outfit, IFormFile Image)
         {
