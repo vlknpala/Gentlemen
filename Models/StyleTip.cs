@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Gentlemen.Models
 {
@@ -14,8 +15,15 @@ namespace Gentlemen.Models
         [Required(ErrorMessage = "İçerik alanı zorunludur.")]
         public string Content { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Kategori alanı zorunludur.")]
+        // Kategori string olarak saklanır (geriye dönük uyumluluk için)
         public string Category { get; set; } = string.Empty;
+
+        // Kategori ilişkisi
+        [Display(Name = "Kategori")]
+        public int? CategoryId { get; set; }
+
+        [ForeignKey("CategoryId")]
+        public virtual Category? CategoryObject { get; set; }
 
         public string? ImageUrl { get; set; }
 
@@ -31,4 +39,4 @@ namespace Gentlemen.Models
 
         public int Likes { get; set; }
     }
-} 
+}

@@ -50,13 +50,22 @@
                                     }
                                 </td>
                                 <td>@tip.Title</td>
-                                <td>@tip.Category</td>
+                                <td>
+                                    @if (tip.CategoryObject != null)
+                                    {
+                                        @tip.CategoryObject.Title
+                                    }
+                                    else
+                                    {
+                                        @tip.Category
+                                    }
+                                </td>
                                 <td>@tip.Author</td>
                                 <td>@tip.PublishDate.ToString("dd.MM.yyyy HH:mm")</td>
                                 <td>@tip.Likes</td>
                                 <td>
                                     <div class="form-check form-switch">
-                                        <input class="form-check-input featured-switch" type="checkbox" 
+                                        <input class="form-check-input featured-switch" type="checkbox"
                                                data-id="@tip.Id" @(tip.IsFeatured ? "checked" : "")>
                                     </div>
                                 </td>
@@ -101,13 +110,12 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Kategori</label>
-                                <select class="form-select" name="Category" required>
+                                <select class="form-select" name="CategoryId">
                                     <option value="">Seçiniz</option>
-                                    <option value="Giyim">Giyim</option>
-                                    <option value="Aksesuar">Aksesuar</option>
-                                    <option value="Bakım">Bakım</option>
-                                    <option value="Moda">Moda</option>
-                                    <option value="Yaşam">Yaşam</option>
+                                    @foreach (var category in ViewBag.Categories)
+                                    {
+                                        <option value="@category.Id">@category.Title</option>
+                                    }
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -230,7 +238,7 @@
                 console.log('Form submit başladı');
 
                 const formData = new FormData(this);
-                
+
                 // Form verilerini kontrol et
                 for (var pair of formData.entries()) {
                     console.log(pair[0] + ': ' + pair[1]);
@@ -253,7 +261,7 @@
                             $('#addStyleTipForm')[0].reset();
                             $('#imagePreview').hide();
                             $('.summernote').summernote('reset');
-                            
+
                             // Sayfayı yenilemek yerine tabloyu yenile
                             $.get('/Admin/StyleTips', function(data) {
                                 console.log('Tablo verisi alındı');
@@ -331,4 +339,4 @@
             }
         }
     </script>
-} 
+}

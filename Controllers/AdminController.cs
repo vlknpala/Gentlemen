@@ -40,7 +40,7 @@ namespace Gentlemen.Controllers
                     HttpContext.Session.SetString("AdminUser", model.Username);
                     return RedirectToAction("Dashboard");
                 }
-                
+
                 ModelState.AddModelError("", "Geçersiz kullanıcı adı veya şifre.");
             }
             return View(model);
@@ -66,7 +66,7 @@ namespace Gentlemen.Controllers
             ViewBag.BlogCount = _context.Blogs.Count();
             ViewBag.OutfitCount = _context.Outfits.Count();
             ViewBag.StyleTipCount = _context.StyleTips.Count();
-            
+
             return View();
         }
 
@@ -79,19 +79,40 @@ namespace Gentlemen.Controllers
             return View(blogs);
         }
 
-        public async Task<IActionResult> Outfits()
+        public IActionResult StyleTips()
         {
             if (!IsAdmin())
                 return RedirectToAction("Login");
 
-            var outfits = await _context.Outfits
-                .OrderByDescending(o => o.CreatedAt)
-                .ToListAsync();
+            var styleTips = _context.StyleTips
+                .Include(s => s.CategoryObject)
+                .OrderByDescending(s => s.PublishDate)
+                .ToList();
 
-            // Sayfa yüklendiğinde kaç kombin olduğunu logla
-            _logger.LogInformation($"Toplam {outfits.Count} kombin listeleniyor.");
+            // Kategorileri ViewBag'e ekle
+            ViewBag.Categories = _context.Categories.Where(c => c.IsActive).ToList();
 
-            return View(outfits);
+            // Mevcut stil ipuçlarının CategoryId'lerini kontrol et ve güncelle
+            foreach (var tip in styleTips)
+            {
+                if (tip.CategoryId == null && !string.IsNullOrEmpty(tip.Category))
+                {
+                    // Kategori adına göre kategori bul
+                    var category = _context.Categories.FirstOrDefault(c => c.Title == tip.Category);
+                    if (category != null)
+                    {
+                        tip.CategoryId = category.Id;
+                        _context.Update(tip);
+                    }
+                }
+            }
+
+            if (_context.ChangeTracker.HasChanges())
+            {
+                _context.SaveChanges();
+            }
+
+            return View(styleTips);
         }
 
         [HttpPost]
@@ -178,15 +199,6 @@ namespace Gentlemen.Controllers
             await _context.SaveChangesAsync();
 
             return Json(new { success = true });
-        }
-
-        public IActionResult StyleTips()
-        {
-            if (!IsAdmin())
-                return RedirectToAction("Login");
-
-            var styleTips = _context.StyleTips.OrderByDescending(s => s.PublishDate).ToList();
-            return View(styleTips);
         }
 
         [HttpPost]
@@ -401,6 +413,16 @@ namespace Gentlemen.Controllers
                 styleTip.PublishDate = DateTime.Now;
                 styleTip.Likes = 0;
 
+                // Kategori adını da kaydet (geriye dönük uyumluluk için)
+                if (styleTip.CategoryId.HasValue)
+                {
+                    var category = await _context.Categories.FindAsync(styleTip.CategoryId.Value);
+                    if (category != null)
+                    {
+                        styleTip.Category = category.Title;
+                    }
+                }
+
                 // Veritabanına kaydet
                 try
                 {
@@ -458,9 +480,15 @@ namespace Gentlemen.Controllers
             if (!IsAdmin())
                 return RedirectToAction("Login");
 
-            var styleTip = await _context.StyleTips.FindAsync(id);
+            var styleTip = await _context.StyleTips
+                .Include(s => s.CategoryObject)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
             if (styleTip == null)
                 return NotFound();
+
+            // Kategorileri ViewBag'e ekle
+            ViewBag.Categories = await _context.Categories.Where(c => c.IsActive).ToListAsync();
 
             return View(styleTip);
         }
@@ -472,42 +500,47 @@ namespace Gentlemen.Controllers
             if (!IsAdmin())
                 return RedirectToAction("Login");
 
-            if (id != styleTip.Id)
-                return NotFound();
-
-            if (ModelState.IsValid)
+            try
             {
-                try
+                var existingStyleTip = await _context.StyleTips.FindAsync(id);
+                if (existingStyleTip == null)
                 {
-                    var existingStyleTip = await _context.StyleTips.FindAsync(id);
-                    if (existingStyleTip == null)
-                        return NotFound();
+                    return NotFound();
+                }
 
-                    if (Image != null && Image.Length > 0)
+                if (Image != null && Image.Length > 0)
+                {
+                    if (!string.IsNullOrEmpty(existingStyleTip.ImageUrl))
                     {
-                        // Delete old image if exists
-                        if (!string.IsNullOrEmpty(existingStyleTip.ImageUrl))
-                        {
-                            _fileUploadService.DeleteFile(existingStyleTip.ImageUrl);
-                        }
-
-                        string imageUrl = await _fileUploadService.UploadFileAsync(Image);
-                        existingStyleTip.ImageUrl = imageUrl;
+                        _fileUploadService.DeleteFile(existingStyleTip.ImageUrl);
                     }
 
-                    existingStyleTip.Title = styleTip.Title;
-                    existingStyleTip.Content = styleTip.Content;
-                    existingStyleTip.Category = styleTip.Category;
-                    existingStyleTip.Author = styleTip.Author;
-                    existingStyleTip.IsFeatured = styleTip.IsFeatured;
+                    string imageUrl = await _fileUploadService.UploadFileAsync(Image);
+                    existingStyleTip.ImageUrl = imageUrl;
+                }
 
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(StyleTips));
-                }
-                catch (Exception ex)
+                existingStyleTip.Title = styleTip.Title;
+                existingStyleTip.Content = styleTip.Content;
+                existingStyleTip.CategoryId = styleTip.CategoryId;
+                existingStyleTip.Author = styleTip.Author;
+                existingStyleTip.IsFeatured = styleTip.IsFeatured;
+
+                // Kategori adını da güncelle (geriye dönük uyumluluk için)
+                if (styleTip.CategoryId.HasValue)
                 {
-                    ModelState.AddModelError("", "Stil ipucu güncellenirken bir hata oluştu: " + ex.Message);
+                    var category = await _context.Categories.FindAsync(styleTip.CategoryId.Value);
+                    if (category != null)
+                    {
+                        existingStyleTip.Category = category.Title;
+                    }
                 }
+
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(StyleTips));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Stil ipucu güncellenirken bir hata oluştu: " + ex.Message);
             }
             return View(styleTip);
         }

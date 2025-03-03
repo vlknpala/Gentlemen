@@ -20,7 +20,7 @@
         <div class="card-body">
             <form asp-action="EditStyleTip" method="post" enctype="multipart/form-data">
                 <input type="hidden" asp-for="Id" />
-                
+
                 <div class="row">
                     <div class="col-md-8">
                         <div class="mb-3">
@@ -38,16 +38,15 @@
 
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label asp-for="Category" class="form-label">Kategori</label>
-                            <select asp-for="Category" class="form-select" required>
+                            <label class="form-label">Kategori</label>
+                            <select asp-for="CategoryId" class="form-select">
                                 <option value="">Seçiniz</option>
-                                <option value="Giyim">Giyim</option>
-                                <option value="Aksesuar">Aksesuar</option>
-                                <option value="Bakım">Bakım</option>
-                                <option value="Moda">Moda</option>
-                                <option value="Yaşam">Yaşam</option>
+                                @foreach (var category in ViewBag.Categories)
+                                {
+                                    <option value="@category.Id" selected="@(Model.CategoryId == category.Id)">@category.Title</option>
+                                }
                             </select>
-                            <span asp-validation-for="Category" class="text-danger"></span>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
@@ -115,4 +114,4 @@
             });
         });
     </script>
-} 
+}
