@@ -17,55 +17,43 @@
     }
     else
     {
-        <div class="row">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             @foreach (var tip in Model)
             {
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100">
-                        <div class="row g-0">
-                            <div class="col-md-4">
-                                @if (!string.IsNullOrEmpty(tip.ImageUrl))
-                                {
-                                    <img src="@tip.ImageUrl" class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="@tip.Title">
-                                }
-                                else
-                                {
-                                    <div class="bg-light h-100 d-flex align-items-center justify-content-center">
-                                        <i class="fas fa-lightbulb fa-3x text-muted"></i>
-                                    </div>
-                                }
-                            </div>
-                            <div class="col-md-8">
-                                <div class="card-body">
-                                    <h5 class="card-title">@tip.Title</h5>
-                                    <p class="card-text">@(tip.Content.Length > 150 ? tip.Content.Substring(0, 150) + "..." : tip.Content)</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="meta">
-                                            <small class="text-muted">
-                                                <i class="fas fa-user"></i> @tip.Author
-                                            </small>
-                                            <br />
-                                            <small class="text-muted">
-                                                <i class="fas fa-calendar"></i> @tip.PublishDate.ToString("dd.MM.yyyy")
-                                            </small>
-                                        </div>
-                                        <div>
-                                            <span class="badge bg-primary mb-2">
-                                                @if (tip.CategoryObject != null)
-                                                {
-                                                    @tip.CategoryObject.Title
-                                                }
-                                                else
-                                                {
-                                                    @tip.Category
-                                                }
-                                            </span>
-                                            <br />
-                                            <a href="@Url.Action("Details", new { id = tip.Id })" class="btn btn-outline-primary btn-sm">
-                                                Devamını Oku
-                                            </a>
-                                        </div>
-                                    </div>
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrEmpty(tip.ImageUrl))
+                        {
+                            <img src="@tip.ImageUrl" class="card-img-top" alt="@tip.Title" style="height: 300px; object-fit: cover;">
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@tip.Title</h5>
+                            <p class="card-text">@Html.Raw(tip.Content.Length > 150 ? tip.Content.Substring(0, 150) + "..." : tip.Content)</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="meta">
+                                    <small class="text-muted">
+                                        <i class="fas fa-user"></i> @tip.Author
+                                    </small>
+                                    <br />
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i> @tip.PublishDate.ToString("dd.MM.yyyy")
+                                    </small>
+                                </div>
+                                <div>
+                                    <span class="badge bg-primary mb-2">
+                                        @if (tip.CategoryObject != null)
+                                        {
+                                            @tip.CategoryObject.Title
+                                        }
+                                        else
+                                        {
+                                            @tip.Category
+                                        }
+                                    </span>
+                                    <br />
+                                    <a href="@Url.Action("Details", new { id = tip.Id })" class="btn btn-outline-secondary btn-sm">
+                                        Detaylar
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -75,3 +63,37 @@
         </div>
     }
 </div>
+
+@section Styles {
+    <style>
+        .card {
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-img-top {
+            transition: transform 0.5s ease;
+        }
+
+        .card:hover .card-img-top {
+            transform: scale(1.03);
+        }
+
+        .badge {
+            font-size: 0.9rem;
+        }
+
+        .btn-outline-secondary {
+            border-color: #6c757d;
+            color: #6c757d;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            color: white;
+        }
+    </style>
+}
