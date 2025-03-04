@@ -96,19 +96,5 @@ namespace Gentlemen.Controllers
                 .ToListAsync();
             return View("Index", outfits);
         }
-
-        [HttpPost]
-        public async Task<IActionResult> Like(int id)
-        {
-            var outfit = await _context.Outfits.FindAsync(id);
-            if (outfit == null)
-            {
-                return Json(new { success = false });
-            }
-
-            outfit.Likes++;
-            await _context.SaveChangesAsync();
-            return Json(new { success = true, likes = outfit.Likes });
-        }
     }
 } 

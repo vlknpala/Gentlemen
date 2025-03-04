@@ -71,52 +71,27 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Like butonu işlevselliği
-    document.querySelectorAll('.like-button').forEach(button => {
-        button.addEventListener('click', async function(e) {
-            e.preventDefault();
-            const tipId = this.dataset.tipId;
-            try {
-                const response = await fetch(`/StyleTip/Like/${tipId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const likeCount = this.querySelector('.like-count');
-                    if (likeCount) {
-                        likeCount.textContent = data.likes;
-                    }
-                    this.classList.toggle('liked');
-                }
-            } catch (error) {
-                console.error('Beğeni işlemi başarısız:', error);
-            }
-        });
-    });
-
     // Kategori filtreleme
     const categoryButtons = document.querySelectorAll('.category-filter');
-    categoryButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const category = this.dataset.category;
-            const items = document.querySelectorAll('.filterable-item');
-            
-            categoryButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
+    if (categoryButtons) {
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const category = this.dataset.category;
+                const items = document.querySelectorAll('.filterable-item');
+                
+                categoryButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
 
-            items.forEach(item => {
-                if (category === 'all' || item.dataset.category === category) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
+                items.forEach(item => {
+                    if (category === 'all' || item.dataset.category === category) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
             });
         });
-    });
+    }
 
     // Arama kutusu otomatik tamamlama
     const searchInput = document.querySelector('.search-input');

@@ -31,9 +31,6 @@
                             <p class="card-text">@outfit.Description</p>
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="btn-group">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="likeOutfit(@outfit.Id)">
-                                        <i class="fas fa-heart"></i> <span id="likeCount-@outfit.Id">@outfit.Likes</span>
-                                    </button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#outfitModal-@outfit.Id">
                                         Detaylar
                                     </button>
@@ -85,16 +82,4 @@
             }
         </div>
     }
-</div>
-
-@section Scripts {
-    <script>
-        function likeOutfit(id) {
-            $.post('/Outfit/Like/' + id, function(response) {
-                if (response.success) {
-                    $('#likeCount-' + id).text(response.likes);
-                }
-            });
-        }
-    </script>
-} 
+</div> 

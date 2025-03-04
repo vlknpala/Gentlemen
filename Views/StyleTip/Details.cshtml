@@ -5,13 +5,6 @@
 }
 
 <div class="container">
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="@Url.Action("Index")">Stil İpuçları</a></li>
-            <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
-        </ol>
-    </nav>
-
     <article class="style-tip">
         <div class="row">
             <div class="col-md-8 mx-auto">
@@ -40,9 +33,6 @@
                             @Model.Category
                         }
                     </span>
-                    <span>
-                        <i class="fas fa-heart"></i> @Model.Likes beğeni
-                    </span>
                 </div>
 
                 <div class="content mb-5">
@@ -50,9 +40,6 @@
                 </div>
 
                 <div class="actions mb-4">
-                    <button class="btn btn-outline-danger me-2 like-button" data-tip-id="@Model.Id">
-                        <i class="fas fa-heart"></i> Beğen <span class="like-count">(@Model.Likes)</span>
-                    </button>
                     <button class="btn btn-primary" onclick="window.print()">
                         <i class="fas fa-print"></i> Yazdır
                     </button>
@@ -79,21 +66,3 @@
         </div>
     </article>
 </div>
-
-@section Scripts {
-    <script>
-        $(document).ready(function () {
-            $('.like-button').click(function () {
-                var button = $(this);
-                var tipId = button.data('tip-id');
-
-                $.post('/StyleTip/Like/' + tipId, function (response) {
-                    if (response.success) {
-                        button.find('.like-count').text('(' + response.likes + ')');
-                        button.addClass('btn-danger').removeClass('btn-outline-danger');
-                    }
-                });
-            });
-        });
-    </script>
-}

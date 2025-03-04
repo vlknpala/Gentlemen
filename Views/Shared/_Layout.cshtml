@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Gentlemen.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
     <style>
         /* Genel font ayarları */
         body {

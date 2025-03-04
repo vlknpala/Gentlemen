@@ -11,11 +11,6 @@
                 @if (!string.IsNullOrEmpty(Model.ImageUrl))
                 {
                     <img src="@Model.ImageUrl" class="img-fluid rounded shadow" alt="@Model.Title">
-                    <div class="position-absolute top-0 end-0 m-3">
-                        <button class="btn btn-outline-danger rounded-circle p-2 like-button" data-outfit-id="@Model.Id">
-                            <i class="fas fa-heart"></i> <span class="like-count">@Model.Likes</span>
-                        </button>
-                    </div>
                 }
             </div>
         </div>
@@ -41,40 +36,29 @@
                 <h3 class="display-6 fw-bold text-success">@Model.EstimatedPrice.ToString("C")</h3>
             </div>
 
-            <div class="clothing-items mb-4">
-                <h5 class="text-primary fw-bold">Parçalar</h5>
-                <div class="card shadow-sm">
-                    <ul class="list-group list-group-flush">
+            @if (Model.ClothingItems != null && Model.ClothingItems.Any())
+            {
+                <div class="clothing-items mb-4">
+                    <h5 class="text-primary fw-bold">Kıyafet Parçaları</h5>
+                    <ul class="list-group">
                         @foreach (var item in Model.ClothingItems)
                         {
-                            <li class="list-group-item d-flex align-items-center">
-                                <i class="fas fa-tshirt me-2 text-secondary"></i>
-                                @item
-                            </li>
+                            <li class="list-group-item">@item</li>
                         }
                     </ul>
                 </div>
-            </div>
-
-            <div class="actions d-flex flex-wrap gap-2 mb-4">
-                <button class="btn btn-primary btn-lg">
-                    <i class="fas fa-shopping-cart me-2"></i> Satın Al
-                </button>
-                <button class="btn btn-outline-secondary btn-lg" onclick="window.print()">
-                    <i class="fas fa-print me-2"></i> Yazdır
-                </button>
-            </div>
+            }
 
             <div class="share-section">
                 <h5 class="text-primary fw-bold">Bu Kombini Paylaş</h5>
-                <div class="social-share d-flex gap-2">
-                    <a href="#" class="btn btn-outline-primary">
+                <div class="social-share">
+                    <a href="#" class="btn btn-outline-primary me-2">
                         <i class="fab fa-facebook-f"></i>
                     </a>
-                    <a href="#" class="btn btn-outline-info">
+                    <a href="#" class="btn btn-outline-info me-2">
                         <i class="fab fa-twitter"></i>
                     </a>
-                    <a href="#" class="btn btn-outline-success">
+                    <a href="#" class="btn btn-outline-success me-2">
                         <i class="fab fa-whatsapp"></i>
                     </a>
                     <a href="#" class="btn btn-outline-secondary">
@@ -88,7 +72,6 @@
     <div class="related-outfits mt-5">
         <h3 class="text-center mb-4 fw-bold">Benzer Kombinler</h3>
         <div class="row">
-            <!-- Burada benzer kombinler gösterilebilir -->
             <div class="col-12 text-center mt-3">
                 <a href="@Url.Action("Index")" class="btn btn-outline-primary">Tüm Kombinleri Gör</a>
             </div>
@@ -96,22 +79,7 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        $(document).ready(function () {
-            $('.like-button').click(function () {
-                var button = $(this);
-                var outfitId = button.data('outfit-id');
-
-                $.post('/Outfit/Like/' + outfitId, function (response) {
-                    if (response.success) {
-                        button.find('.like-count').text(response.likes);
-                        button.addClass('btn-danger').removeClass('btn-outline-danger');
-                    }
-                });
-            });
-        });
-    </script>
+@section Styles {
     <style>
         .outfit-image-container {
             overflow: hidden;

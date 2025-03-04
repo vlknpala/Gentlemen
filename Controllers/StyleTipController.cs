@@ -50,20 +50,6 @@ namespace Gentlemen.Controllers
             return View(tip);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Like(int id)
-        {
-            var tip = await _context.StyleTips.FindAsync(id);
-            if (tip == null)
-            {
-                return Json(new { success = false });
-            }
-
-            tip.Likes++;
-            await _context.SaveChangesAsync();
-            return Json(new { success = true, likes = tip.Likes });
-        }
-
         public async Task<IActionResult> Featured()
         {
             var featuredTips = await _context.StyleTips
