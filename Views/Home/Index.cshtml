@@ -69,7 +69,7 @@
                         <div class="tip-content">
                             <span class="tip-category">@tip.Category</span>
                             <h3>@tip.Title</h3>
-                            <p class="text-muted">@(tip.Content.Length > 100 ? tip.Content.Substring(0, 100) + "..." : tip.Content)</p>
+                            <p class="text-muted">@Html.Raw(tip.Content.Length > 100 ? tip.Content.Substring(0, 100) + "..." : tip.Content)</p>
                             <a asp-controller="StyleTip" asp-action="Details" asp-route-id="@tip.Id" class="blog-link">Devamını Oku →</a>
                         </div>
                     </div>
