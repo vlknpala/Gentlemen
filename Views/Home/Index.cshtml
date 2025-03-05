@@ -69,7 +69,7 @@
                         <div class="tip-content">
                             <span class="tip-category">@tip.Category</span>
                             <h3>@tip.Title</h3>
-                            <p class="text-muted">@Html.Raw(tip.Content.Length > 100 ? tip.Content.Substring(0, 100) + "..." : tip.Content)</p>
+                            <p class="text-muted">@Html.Raw(System.Text.RegularExpressions.Regex.Replace(tip.Content.Length > 100 ? tip.Content.Substring(0, 100) + "..." : tip.Content, "<.*?>", ""))</p>
                             <a asp-controller="StyleTip" asp-action="Details" asp-route-id="@tip.Id" class="blog-link">Devamını Oku →</a>
                         </div>
                     </div>
@@ -92,27 +92,30 @@
         <div class="row g-4">
             @foreach (var outfit in ViewBag.FeaturedOutfits ?? new List<Outfit>())
             {
-                <div class="col-md-6">
-                    <div class="outfit-card">
-                        <div class="outfit-image">
-                            <img src="@outfit.ImageUrl" alt="@outfit.Title">
-                            <div class="outfit-overlay">
-                                <span class="outfit-season">@outfit.Season</span>
-                                <span class="outfit-style">@outfit.Style</span>
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrEmpty(outfit.ImageUrl))
+                        {
+                            <img src="@outfit.ImageUrl" class="card-img-top" alt="@outfit.Title" style="height: 300px; object-fit: cover;">
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@outfit.Title</h5>
+                            <p class="card-text">@outfit.Description</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-primary mb-2">@outfit.Season</span>
+                                    <span class="badge bg-secondary mb-2">@outfit.Style</span>
                             </div>
                         </div>
-                        <div class="outfit-content">
-                            <h3>@outfit.Title</h3>
-                            <p class="text-muted">@outfit.Description</p>
-                            <div class="outfit-meta">
-                                <span class="price">@outfit.EstimatedPrice.ToString("C")</span>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span class="text-success fw-bold">@outfit.EstimatedPrice.ToString("C")</span>
                                 @if (!string.IsNullOrEmpty(outfit.Slug))
                                 {
-                                    <a href="/kombinler/@outfit.Slug" class="btn btn-outline-dark">Detaylar</a>
+                                    <a href="/kombinler/@outfit.Slug" class="btn btn-outline-primary btn-sm">Detaylar</a>
                                 }
                                 else
                                 {
-                                    <a asp-controller="Outfit" asp-action="Details" asp-route-id="@outfit.Id" class="btn btn-outline-dark">Detaylar</a>
+                                    <a asp-controller="Outfit" asp-action="Details" asp-route-id="@outfit.Id" class="btn btn-outline-primary btn-sm">Detaylar</a>
                                 }
                             </div>
                         </div>
@@ -144,7 +147,7 @@
                         </div>
                         <div class="blog-content">
                             <h3>@post.Title</h3>
-                            <p class="text-muted">@post.Content.Substring(0, Math.Min(post.Content.Length, 100))...</p>
+                            <p class="text-muted">@Html.Raw(System.Text.RegularExpressions.Regex.Replace(post.Content.Substring(0, Math.Min(post.Content.Length, 100)), "<.*?>", ""))...</p>
                             <div class="blog-meta">
                                 <span>@post.PublishDate.ToString("dd MMMM yyyy")</span>
                                 <a asp-controller="Blog" asp-action="Details" asp-route-id="@post.Id" class="blog-link">Devamını Oku →</a>

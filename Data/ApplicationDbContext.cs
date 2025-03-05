@@ -66,6 +66,8 @@ namespace Gentlemen.Data
                 entity.Property(s => s.Category);
                 entity.Property(s => s.Author)
                     .IsRequired();
+                entity.Property(s => s.Slug)
+                    .IsRequired(false);
 
                 entity.HasOne(s => s.CategoryObject)
                     .WithMany(c => c.StyleTips)
