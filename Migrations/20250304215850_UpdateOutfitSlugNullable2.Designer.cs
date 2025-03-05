@@ -3,6 +3,7 @@ using System;
 using Gentlemen.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Gentlemen.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250304215850_UpdateOutfitSlugNullable2")]
+    partial class UpdateOutfitSlugNullable2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,9 +45,6 @@ namespace Gentlemen.Migrations
 
                     b.Property<DateTime>("PublishDate")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Slug")
-                        .HasColumnType("longtext");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -96,7 +96,7 @@ namespace Gentlemen.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 3, 5, 1, 14, 45, 148, DateTimeKind.Local).AddTicks(9181),
+                            CreatedAt = new DateTime(2025, 3, 5, 0, 58, 50, 381, DateTimeKind.Local).AddTicks(1806),
                             Description = "Profesyonel ve şık görünüm için öneriler",
                             ImageUrl = "/images/business-style.jpg",
                             IsActive = true,
@@ -106,7 +106,7 @@ namespace Gentlemen.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 3, 5, 1, 14, 45, 148, DateTimeKind.Local).AddTicks(9196),
+                            CreatedAt = new DateTime(2025, 3, 5, 0, 58, 50, 381, DateTimeKind.Local).AddTicks(1815),
                             Description = "Rahat ve trend günlük kombinler",
                             ImageUrl = "/images/casual-style.jpg",
                             IsActive = true,
@@ -116,57 +116,13 @@ namespace Gentlemen.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 3, 5, 1, 14, 45, 148, DateTimeKind.Local).AddTicks(9197),
+                            CreatedAt = new DateTime(2025, 3, 5, 0, 58, 50, 381, DateTimeKind.Local).AddTicks(1817),
                             Description = "Özel anlar için şık seçimler",
                             ImageUrl = "/images/special-occasions.jpg",
                             IsActive = true,
                             Slug = "ozel-gunler",
                             Title = "Özel Günler"
                         });
-                });
-
-            modelBuilder.Entity("Gentlemen.Models.Image", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<int?>("BlogId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int?>("OutfitId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("StyleTipId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BlogId");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("OutfitId");
-
-                    b.HasIndex("StyleTipId");
-
-                    b.ToTable("Images", (string)null);
                 });
 
             modelBuilder.Entity("Gentlemen.Models.Outfit", b =>
@@ -325,37 +281,6 @@ namespace Gentlemen.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("Gentlemen.Models.Image", b =>
-                {
-                    b.HasOne("Gentlemen.Models.Blog", "Blog")
-                        .WithMany("Images")
-                        .HasForeignKey("BlogId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Gentlemen.Models.Category", "Category")
-                        .WithMany("Images")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Gentlemen.Models.Outfit", "Outfit")
-                        .WithMany("Images")
-                        .HasForeignKey("OutfitId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Gentlemen.Models.StyleTip", "StyleTip")
-                        .WithMany("Images")
-                        .HasForeignKey("StyleTipId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("Blog");
-
-                    b.Navigation("Category");
-
-                    b.Navigation("Outfit");
-
-                    b.Navigation("StyleTip");
-                });
-
             modelBuilder.Entity("Gentlemen.Models.StyleTip", b =>
                 {
                     b.HasOne("Gentlemen.Models.Category", "CategoryObject")
@@ -366,26 +291,9 @@ namespace Gentlemen.Migrations
                     b.Navigation("CategoryObject");
                 });
 
-            modelBuilder.Entity("Gentlemen.Models.Blog", b =>
-                {
-                    b.Navigation("Images");
-                });
-
             modelBuilder.Entity("Gentlemen.Models.Category", b =>
                 {
-                    b.Navigation("Images");
-
                     b.Navigation("StyleTips");
-                });
-
-            modelBuilder.Entity("Gentlemen.Models.Outfit", b =>
-                {
-                    b.Navigation("Images");
-                });
-
-            modelBuilder.Entity("Gentlemen.Models.StyleTip", b =>
-                {
-                    b.Navigation("Images");
                 });
 #pragma warning restore 612, 618
         }

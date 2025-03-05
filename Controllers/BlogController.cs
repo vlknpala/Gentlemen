@@ -38,6 +38,24 @@ namespace Gentlemen.Controllers
             return View(blog);
         }
 
+        [HttpGet]
+        [Route("blog/{slug}")]
+        public async Task<IActionResult> DetailsBySlug(string slug)
+        {
+            var blog = await _context.Blogs
+                .FirstOrDefaultAsync(b => b.Slug == slug);
+
+            if (blog == null)
+            {
+                return NotFound();
+            }
+
+            blog.ViewCount++;
+            await _context.SaveChangesAsync();
+
+            return View("Details", blog);
+        }
+
         public async Task<IActionResult> Category(string category)
         {
             var blogs = await _context.Blogs
@@ -68,4 +86,4 @@ namespace Gentlemen.Controllers
             return View(blog);
         }
     }
-} 
+}

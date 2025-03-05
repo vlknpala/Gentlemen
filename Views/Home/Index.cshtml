@@ -92,26 +92,28 @@
         <div class="row g-4">
             @foreach (var outfit in ViewBag.FeaturedOutfits ?? new List<Outfit>())
             {
-                <div class="col-md-4">
-                    <div class="card h-100 shadow-sm">
-                        @if (!string.IsNullOrEmpty(outfit.ImageUrl))
-                        {
-                            <img src="@outfit.ImageUrl" class="card-img-top" alt="@outfit.Title" style="height: 300px; object-fit: cover;">
-                        }
-                        <div class="card-body">
-                            <h5 class="card-title">@outfit.Title</h5>
-                            <p class="card-text">@outfit.Description</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="meta">
-                                    <span class="badge bg-primary me-2">@outfit.Season</span>
-                                    <span class="badge bg-secondary">@outfit.Style</span>
-                                </div>
-                                <div>
-                                    <span class="price mb-2 d-block text-end">@outfit.EstimatedPrice.ToString("C")</span>
-                                    <a asp-controller="Outfit" asp-action="Details" asp-route-id="@outfit.Id" class="btn btn-outline-secondary btn-sm">
-                                        Detaylar
-                                    </a>
-                                </div>
+                <div class="col-md-6">
+                    <div class="outfit-card">
+                        <div class="outfit-image">
+                            <img src="@outfit.ImageUrl" alt="@outfit.Title">
+                            <div class="outfit-overlay">
+                                <span class="outfit-season">@outfit.Season</span>
+                                <span class="outfit-style">@outfit.Style</span>
+                            </div>
+                        </div>
+                        <div class="outfit-content">
+                            <h3>@outfit.Title</h3>
+                            <p class="text-muted">@outfit.Description</p>
+                            <div class="outfit-meta">
+                                <span class="price">@outfit.EstimatedPrice.ToString("C")</span>
+                                @if (!string.IsNullOrEmpty(outfit.Slug))
+                                {
+                                    <a href="/kombinler/@outfit.Slug" class="btn btn-outline-dark">Detaylar</a>
+                                }
+                                else
+                                {
+                                    <a asp-controller="Outfit" asp-action="Details" asp-route-id="@outfit.Id" class="btn btn-outline-dark">Detaylar</a>
+                                }
                             </div>
                         </div>
                     </div>
@@ -177,7 +179,7 @@
                                 Abone Ol <i class="fas fa-arrow-right ms-2"></i>
                             </button>
                             <small class="form-text text-muted mt-3">
-                                <i class="fas fa-shield-alt me-1"></i> 
+                                <i class="fas fa-shield-alt me-1"></i>
                                 Bilgileriniz güvende. Asla spam göndermeyeceğiz.
                             </small>
                         </div>
@@ -420,7 +422,7 @@
         .newsletter-title {
             font-size: 2rem;
         }
-        
+
         .newsletter-description {
             font-size: 1rem;
             padding: 0 1rem;

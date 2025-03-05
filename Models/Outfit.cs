@@ -14,6 +14,9 @@ namespace Gentlemen.Models
         [Required(ErrorMessage = "Açıklama alanı zorunludur.")]
         public string Description { get; set; } = string.Empty;
 
+        // SEO-friendly URL için slug
+        public string? Slug { get; set; }
+
         public string ImageUrl { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Sezon alanı zorunludur.")]

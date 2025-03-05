@@ -15,6 +15,9 @@ namespace Gentlemen.Models
         [Required(ErrorMessage = "İçerik alanı zorunludur.")]
         public string Content { get; set; } = string.Empty;
 
+        // SEO-friendly URL için slug
+        public string Slug { get; set; } = string.Empty;
+
         // Kategori string olarak saklanır (geriye dönük uyumluluk için)
         public string Category { get; set; } = string.Empty;
 

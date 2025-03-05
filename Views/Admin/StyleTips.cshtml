@@ -12,13 +12,34 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3">Stil İpuçları Yönetimi</h1>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStyleTipModal">
-            <i class="fas fa-plus"></i> Yeni Stil İpucu Ekle
-        </button>
+        <div>
+            <a href="@Url.Action("GenerateSlugsForStyleTips", "Admin")" class="btn btn-success me-2">
+                <i class="fas fa-link"></i> URL'leri Oluştur
+            </a>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStyleTipModal">
+                <i class="fas fa-plus"></i> Yeni Stil İpucu Ekle
+            </button>
+        </div>
     </div>
 
     <!-- Alert Container -->
     <div id="alertContainer" class="mb-4"></div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
     <div class="card shadow mb-4">
         <div class="card-header py-3">
@@ -31,6 +52,7 @@
                         <tr>
                             <th>Görsel</th>
                             <th>Başlık</th>
+                            <th>SEO URL</th>
                             <th>Kategori</th>
                             <th>Yazar</th>
                             <th>Yayın Tarihi</th>
@@ -51,6 +73,19 @@
                                 </td>
                                 <td>@tip.Title</td>
                                 <td>
+                                    @if (!string.IsNullOrEmpty(tip.Slug))
+                                    {
+                                        <a href="/stil-onerileri/@tip.Slug" target="_blank" class="text-primary">
+                                            <small>@tip.Slug</small>
+                                            <i class="fas fa-external-link-alt ms-1"></i>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted"><small>Oluşturulmadı</small></span>
+                                    }
+                                </td>
+                                <td>
                                     @if (tip.CategoryObject != null)
                                     {
                                         @tip.CategoryObject.Title
@@ -65,7 +100,7 @@
                                 <td>@tip.Likes</td>
                                 <td>
                                     <div class="form-check form-switch">
-                                        <input class="form-check-input featured-switch" type="checkbox" 
+                                        <input class="form-check-input featured-switch" type="checkbox"
                                                data-id="@tip.Id" @(tip.IsFeatured ? "checked" : "")>
                                     </div>
                                 </td>
@@ -101,6 +136,11 @@
                             <div class="mb-3">
                                 <label class="form-label">Başlık</label>
                                 <input type="text" class="form-control" name="Title" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">SEO URL (Slug)</label>
+                                <input type="text" class="form-control" name="Slug">
+                                <small class="form-text text-muted">Boş bırakırsanız başlıktan otomatik oluşturulur.</small>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">İçerik</label>
@@ -165,10 +205,10 @@
                     zeroRecords: "Eşleşen kayıt bulunamadı"
                 },
                 columnDefs: [
-                    { orderable: false, targets: [0, 6, 7] },
-                    { searchable: false, targets: [0, 6, 7] }
+                    { orderable: false, targets: [0, 7, 8] },
+                    { searchable: false, targets: [0, 7, 8] }
                 ],
-                order: [[4, 'desc']],
+                order: [[5, 'desc']],
                 pageLength: 10,
                 lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tümü"]],
                 stateSave: true,
@@ -281,10 +321,10 @@
                                         zeroRecords: "Eşleşen kayıt bulunamadı"
                                     },
                                     columnDefs: [
-                                        { orderable: false, targets: [0, 6, 7] },
-                                        { searchable: false, targets: [0, 6, 7] }
+                                        { orderable: false, targets: [0, 7, 8] },
+                                        { searchable: false, targets: [0, 7, 8] }
                                     ],
-                                    order: [[4, 'desc']],
+                                    order: [[5, 'desc']],
                                     pageLength: 10,
                                     lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tümü"]],
                                     stateSave: true
@@ -339,4 +379,4 @@
             }
         }
     </script>
-} 
+}
