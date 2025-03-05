@@ -50,6 +50,8 @@ namespace Gentlemen.Data
                     .IsRequired();
                 entity.Property(o => o.Style)
                     .IsRequired();
+                entity.Property(o => o.Slug)
+                    .IsRequired(false);
             });
 
             // StyleTip entity configuration

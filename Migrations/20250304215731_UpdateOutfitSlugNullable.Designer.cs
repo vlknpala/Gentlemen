@@ -3,6 +3,7 @@ using System;
 using Gentlemen.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Gentlemen.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250304215731_UpdateOutfitSlugNullable")]
+    partial class UpdateOutfitSlugNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,9 +45,6 @@ namespace Gentlemen.Migrations
 
                     b.Property<DateTime>("PublishDate")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Slug")
-                        .HasColumnType("longtext");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -96,7 +96,7 @@ namespace Gentlemen.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 3, 5, 1, 14, 45, 148, DateTimeKind.Local).AddTicks(9181),
+                            CreatedAt = new DateTime(2025, 3, 5, 0, 57, 31, 249, DateTimeKind.Local).AddTicks(6230),
                             Description = "Profesyonel ve şık görünüm için öneriler",
                             ImageUrl = "/images/business-style.jpg",
                             IsActive = true,
@@ -106,7 +106,7 @@ namespace Gentlemen.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 3, 5, 1, 14, 45, 148, DateTimeKind.Local).AddTicks(9196),
+                            CreatedAt = new DateTime(2025, 3, 5, 0, 57, 31, 249, DateTimeKind.Local).AddTicks(6243),
                             Description = "Rahat ve trend günlük kombinler",
                             ImageUrl = "/images/casual-style.jpg",
                             IsActive = true,
@@ -116,7 +116,7 @@ namespace Gentlemen.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 3, 5, 1, 14, 45, 148, DateTimeKind.Local).AddTicks(9197),
+                            CreatedAt = new DateTime(2025, 3, 5, 0, 57, 31, 249, DateTimeKind.Local).AddTicks(6244),
                             Description = "Özel anlar için şık seçimler",
                             ImageUrl = "/images/special-occasions.jpg",
                             IsActive = true,
@@ -165,6 +165,7 @@ namespace Gentlemen.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("Slug")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("Style")

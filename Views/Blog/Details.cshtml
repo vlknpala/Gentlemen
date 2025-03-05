@@ -5,13 +5,6 @@
 }
 
 <div class="container">
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="@Url.Action("Index")">Bloglar</a></li>
-            <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
-        </ol>
-    </nav>
-
     <article class="blog-post">
         @if (!string.IsNullOrEmpty(Model.ImageUrl))
         {
@@ -91,4 +84,4 @@
             border-radius: 50%;
         }
     </style>
-} 
+}

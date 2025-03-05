@@ -16,6 +16,8 @@ namespace Gentlemen.Models
 
         public string? ImageUrl { get; set; }
 
+        public string? Slug { get; set; }
+
         [Required(ErrorMessage = "Yayın tarihi zorunludur.")]
         [Display(Name = "Yayın Tarihi")]
         public DateTime PublishDate { get; set; }
@@ -28,4 +30,4 @@ namespace Gentlemen.Models
 
         public int ViewCount { get; set; }
     }
-} 
+}

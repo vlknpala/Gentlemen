@@ -6,6 +6,10 @@ using Gentlemen.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
+using System;
 
 namespace Gentlemen.Controllers
 {
@@ -14,12 +18,14 @@ namespace Gentlemen.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IFileUploadService _fileUploadService;
         private readonly ILogger<AdminController> _logger;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public AdminController(ApplicationDbContext context, IFileUploadService fileUploadService, ILogger<AdminController> logger)
+        public AdminController(ApplicationDbContext context, IFileUploadService fileUploadService, ILogger<AdminController> logger, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _fileUploadService = fileUploadService;
             _logger = logger;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public IActionResult Login()
@@ -176,6 +182,16 @@ namespace Gentlemen.Controllers
                 outfit.CreatedAt = DateTime.Now;
                 outfit.Likes = 0;
 
+                // Slug oluştur
+                if (string.IsNullOrEmpty(outfit.Slug))
+                {
+                    outfit.Slug = GenerateSlug(outfit.Title);
+                }
+                else
+                {
+                    outfit.Slug = GenerateSlug(outfit.Slug);
+                }
+
                 // IsFeatured değerini form verilerinden manuel olarak al
                 outfit.IsFeatured = Request.Form["IsFeatured"] == "on";
 
@@ -315,6 +331,16 @@ namespace Gentlemen.Controllers
                 outfit.CreatedAt = existingOutfit.CreatedAt;
                 outfit.Likes = existingOutfit.Likes;
 
+                // Slug kontrolü
+                if (string.IsNullOrWhiteSpace(outfit.Slug))
+                {
+                    outfit.Slug = GenerateSlug(outfit.Title);
+                }
+                else
+                {
+                    outfit.Slug = GenerateSlug(outfit.Slug);
+                }
+
                 // IsFeatured değerini form verilerinden manuel olarak al
                 outfit.IsFeatured = Request.Form["IsFeatured"] == "on";
 
@@ -438,6 +464,16 @@ namespace Gentlemen.Controllers
                     blog.PublishDate = DateTime.Now;
                     blog.ViewCount = 0;
 
+                    // Generate slug if not provided
+                    if (string.IsNullOrEmpty(blog.Slug))
+                    {
+                        blog.Slug = GenerateSlug(blog.Title);
+                    }
+                    else
+                    {
+                        blog.Slug = GenerateSlug(blog.Slug);
+                    }
+
                     _context.Blogs.Add(blog);
                     await _context.SaveChangesAsync();
 
@@ -498,6 +534,16 @@ namespace Gentlemen.Controllers
                     existingBlog.Category = blog.Category;
                     existingBlog.Author = blog.Author;
 
+                    // Generate slug if not provided
+                    if (string.IsNullOrEmpty(blog.Slug))
+                    {
+                        existingBlog.Slug = GenerateSlug(blog.Title);
+                    }
+                    else
+                    {
+                        existingBlog.Slug = GenerateSlug(blog.Slug);
+                    }
+
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Blogs));
                 }
@@ -544,6 +590,16 @@ namespace Gentlemen.Controllers
                 // Stil ipucu bilgilerini ayarla
                 styleTip.PublishDate = DateTime.Now;
                 styleTip.Likes = 0;
+
+                // Slug oluştur
+                if (string.IsNullOrEmpty(styleTip.Slug))
+                {
+                    styleTip.Slug = GenerateSlug(styleTip.Title);
+                }
+                else
+                {
+                    styleTip.Slug = GenerateSlug(styleTip.Slug);
+                }
 
                 // Kategori adını da kaydet (geriye dönük uyumluluk için)
                 if (styleTip.CategoryId.HasValue)
@@ -632,12 +688,27 @@ namespace Gentlemen.Controllers
             if (!IsAdmin())
                 return RedirectToAction("Login");
 
+            if (id != styleTip.Id)
+            {
+                return NotFound();
+            }
+
             try
             {
                 var existingStyleTip = await _context.StyleTips.FindAsync(id);
                 if (existingStyleTip == null)
                 {
                     return NotFound();
+                }
+
+                // Slug kontrolü
+                if (string.IsNullOrEmpty(styleTip.Slug))
+                {
+                    styleTip.Slug = GenerateSlug(styleTip.Title);
+                }
+                else
+                {
+                    styleTip.Slug = GenerateSlug(styleTip.Slug);
                 }
 
                 if (Image != null && Image.Length > 0)
@@ -656,6 +727,7 @@ namespace Gentlemen.Controllers
                 existingStyleTip.CategoryId = styleTip.CategoryId;
                 existingStyleTip.Author = styleTip.Author;
                 existingStyleTip.IsFeatured = styleTip.IsFeatured;
+                existingStyleTip.Slug = styleTip.Slug;
 
                 // Kategori adını da güncelle (geriye dönük uyumluluk için)
                 if (styleTip.CategoryId.HasValue)
@@ -668,13 +740,15 @@ namespace Gentlemen.Controllers
                 }
 
                 await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Stil ipucu başarıyla güncellendi.";
                 return RedirectToAction(nameof(StyleTips));
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", "Stil ipucu güncellenirken bir hata oluştu: " + ex.Message);
+                ViewBag.Categories = await _context.Categories.ToListAsync();
+                return View(styleTip);
             }
-            return View(styleTip);
         }
 
         public async Task<IActionResult> Categories()
@@ -767,6 +841,112 @@ namespace Gentlemen.Controllers
             }
 
             return Json(category);
+        }
+
+        // Tüm stil ipuçları için slug oluştur
+        [HttpGet("admin/generate-slugs")]
+        public async Task<IActionResult> GenerateSlugsForStyleTips()
+        {
+            try
+            {
+                var tips = await _context.StyleTips.ToListAsync();
+                int updatedCount = 0;
+
+                foreach (var tip in tips)
+                {
+                    if (string.IsNullOrEmpty(tip.Slug))
+                    {
+                        tip.Slug = GenerateSlug(tip.Title);
+                        updatedCount++;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"{updatedCount} stil ipucu için slug oluşturuldu.";
+                return RedirectToAction("StyleTips");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Slug oluşturulurken hata: {ex.Message}";
+                return RedirectToAction("StyleTips");
+            }
+        }
+
+        // Tüm kombinler için slug oluştur
+        [HttpGet("admin/generate-outfit-slugs")]
+        public async Task<IActionResult> GenerateSlugsForOutfits()
+        {
+            try
+            {
+                var outfits = await _context.Outfits.ToListAsync();
+                int updatedCount = 0;
+
+                foreach (var outfit in outfits)
+                {
+                    if (string.IsNullOrEmpty(outfit.Slug))
+                    {
+                        outfit.Slug = GenerateSlug(outfit.Title);
+                        updatedCount++;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"{updatedCount} kombin için slug oluşturuldu.";
+                return RedirectToAction("Outfits");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Slug oluşturulurken hata: {ex.Message}";
+                return RedirectToAction("Outfits");
+            }
+        }
+
+        // Slug oluşturma yardımcı metodu
+        private string GenerateSlug(string title)
+        {
+            // Türkçe karakterleri değiştir
+            string slug = title.ToLower()
+                .Replace('ı', 'i')
+                .Replace('ğ', 'g')
+                .Replace('ü', 'u')
+                .Replace('ş', 's')
+                .Replace('ö', 'o')
+                .Replace('ç', 'c');
+
+            // Alfanumerik olmayan karakterleri tire ile değiştir
+            slug = Regex.Replace(slug, @"[^a-z0-9\s-]", "");
+            // Boşlukları tire ile değiştir
+            slug = Regex.Replace(slug, @"\s+", "-");
+            // Birden fazla tireyi tek tire ile değiştir
+            slug = Regex.Replace(slug, @"-+", "-");
+            // Baştaki ve sondaki tireleri kaldır
+            slug = slug.Trim('-');
+
+            return slug;
+        }
+
+        [HttpGet("admin/generate-blog-slugs")]
+        public async Task<IActionResult> GenerateSlugsForBlogs()
+        {
+            if (!IsAdmin())
+                return RedirectToAction("Login");
+
+            var blogs = await _context.Blogs.ToListAsync();
+            int count = 0;
+
+            foreach (var blog in blogs)
+            {
+                if (string.IsNullOrEmpty(blog.Slug))
+                {
+                    blog.Slug = GenerateSlug(blog.Title);
+                    count++;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = $"{count} blog yazısı için slug oluşturuldu.";
+            return RedirectToAction("Blogs");
         }
     }
 }

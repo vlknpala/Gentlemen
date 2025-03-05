@@ -41,9 +41,18 @@
                         <div class="card-footer bg-transparent">
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="badge bg-primary">@blog.Category</span>
-                                <a href="@Url.Action("Details", new { id = blog.Id })" class="btn btn-outline-primary btn-sm">
-                                    Devamını Oku
-                                </a>
+                                @if (!string.IsNullOrEmpty(blog.Slug))
+                                {
+                                    <a href="/blog/@blog.Slug" class="btn btn-outline-primary btn-sm">
+                                        Devamını Oku
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a href="@Url.Action("Details", new { id = blog.Id })" class="btn btn-outline-primary btn-sm">
+                                        Devamını Oku
+                                    </a>
+                                }
                             </div>
                         </div>
                     </div>
@@ -51,4 +60,4 @@
             }
         </div>
     }
-</div> 
+</div>

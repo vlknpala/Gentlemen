@@ -52,16 +52,21 @@
             <div class="share-section">
                 <h5 class="text-primary fw-bold">Bu Kombini Paylaş</h5>
                 <div class="social-share">
-                    <a href="#" class="btn btn-outline-primary me-2">
+                    @{
+                        var currentUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+                        var encodedUrl = Uri.EscapeDataString(currentUrl);
+                        var encodedTitle = Uri.EscapeDataString(Model.Title);
+                    }
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=@encodedUrl" target="_blank" class="btn btn-outline-primary me-2">
                         <i class="fab fa-facebook-f"></i>
                     </a>
-                    <a href="#" class="btn btn-outline-info me-2">
+                    <a href="https://twitter.com/intent/tweet?url=@encodedUrl&text=@encodedTitle" target="_blank" class="btn btn-outline-info me-2">
                         <i class="fab fa-twitter"></i>
                     </a>
-                    <a href="#" class="btn btn-outline-success me-2">
+                    <a href="https://api.whatsapp.com/send?text=@encodedTitle @encodedUrl" target="_blank" class="btn btn-outline-success me-2">
                         <i class="fab fa-whatsapp"></i>
                     </a>
-                    <a href="#" class="btn btn-outline-secondary">
+                    <a href="https://pinterest.com/pin/create/button/?url=@encodedUrl&description=@encodedTitle" target="_blank" class="btn btn-outline-secondary">
                         <i class="fab fa-pinterest"></i>
                     </a>
                 </div>
@@ -72,6 +77,47 @@
     <div class="related-outfits mt-5">
         <h3 class="text-center mb-4 fw-bold">Benzer Kombinler</h3>
         <div class="row">
+            @if (ViewBag.RelatedOutfits != null && ((IEnumerable<Gentlemen.Models.Outfit>)ViewBag.RelatedOutfits).Any())
+            {
+                foreach (var relatedOutfit in (IEnumerable<Gentlemen.Models.Outfit>)ViewBag.RelatedOutfits)
+                {
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            @if (!string.IsNullOrEmpty(relatedOutfit.ImageUrl))
+                            {
+                                <img src="@relatedOutfit.ImageUrl" class="card-img-top" alt="@relatedOutfit.Title" style="height: 200px; object-fit: cover;">
+                            }
+                            <div class="card-body">
+                                <h5 class="card-title">@relatedOutfit.Title</h5>
+                                <p class="card-text">@(relatedOutfit.Description.Length > 100 ? relatedOutfit.Description.Substring(0, 100) + "..." : relatedOutfit.Description)</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="btn-group">
+                                        @if (!string.IsNullOrEmpty(relatedOutfit.Slug))
+                                        {
+                                            <a href="/kombinler/@relatedOutfit.Slug" class="btn btn-sm btn-outline-secondary">
+                                                Detaylar
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="@Url.Action("Details", new { id = relatedOutfit.Id })" class="btn btn-sm btn-outline-secondary">
+                                                Detaylar
+                                            </a>
+                                        }
+                                    </div>
+                                    <small class="text-muted">@relatedOutfit.Season</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center">
+                    <p class="text-muted">Benzer kombin bulunamadı.</p>
+                </div>
+            }
             <div class="col-12 text-center mt-3">
                 <a href="@Url.Action("Index")" class="btn btn-outline-primary">Tüm Kombinleri Gör</a>
             </div>

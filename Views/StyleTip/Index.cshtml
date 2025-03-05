@@ -61,9 +61,18 @@
                                                 }
                                             </span>
                                             <br />
-                                            <a href="@Url.Action("Details", new { id = tip.Id })" class="btn btn-outline-primary btn-sm">
-                                                Devamını Oku
-                                            </a>
+                                            @if (!string.IsNullOrEmpty(tip.Slug))
+                                            {
+                                                <a href="/stil-onerileri/@tip.Slug" class="btn btn-outline-primary btn-sm">
+                                                    Devamını Oku
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a href="@Url.Action("Details", new { id = tip.Id })" class="btn btn-outline-primary btn-sm">
+                                                    Devamını Oku
+                                                </a>
+                                            }
                                         </div>
                                     </div>
                                 </div>

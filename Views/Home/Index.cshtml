@@ -106,7 +106,14 @@
                             <p class="text-muted">@outfit.Description</p>
                             <div class="outfit-meta">
                                 <span class="price">@outfit.EstimatedPrice.ToString("C")</span>
-                                <a asp-controller="Outfit" asp-action="Details" asp-route-id="@outfit.Id" class="btn btn-outline-dark">Detaylar</a>
+                                @if (!string.IsNullOrEmpty(outfit.Slug))
+                                {
+                                    <a href="/kombinler/@outfit.Slug" class="btn btn-outline-dark">Detaylar</a>
+                                }
+                                else
+                                {
+                                    <a asp-controller="Outfit" asp-action="Details" asp-route-id="@outfit.Id" class="btn btn-outline-dark">Detaylar</a>
+                                }
                             </div>
                         </div>
                     </div>
@@ -172,7 +179,7 @@
                                 Abone Ol <i class="fas fa-arrow-right ms-2"></i>
                             </button>
                             <small class="form-text text-muted mt-3">
-                                <i class="fas fa-shield-alt me-1"></i> 
+                                <i class="fas fa-shield-alt me-1"></i>
                                 Bilgileriniz güvende. Asla spam göndermeyeceğiz.
                             </small>
                         </div>
@@ -415,7 +422,7 @@
         .newsletter-title {
             font-size: 2rem;
         }
-        
+
         .newsletter-description {
             font-size: 1rem;
             padding: 0 1rem;

@@ -8,13 +8,34 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3">Kombinler Yönetimi</h1>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOutfitModal">
-            <i class="fas fa-plus"></i> Yeni Kombin Ekle
-        </button>
+        <div>
+            <a href="@Url.Action("GenerateSlugsForOutfits", "Admin")" class="btn btn-success me-2">
+                <i class="fas fa-link"></i> URL'leri Oluştur
+            </a>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOutfitModal">
+                <i class="fas fa-plus"></i> Yeni Kombin Ekle
+            </button>
+        </div>
     </div>
 
     <!-- Alert Container -->
     <div id="alertContainer" class="mb-4"></div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
     <div class="card shadow mb-4">
         <div class="card-header py-3">
@@ -27,6 +48,7 @@
                         <tr>
                             <th>Görsel</th>
                             <th>Başlık</th>
+                            <th>SEO URL</th>
                             <th>Sezon</th>
                             <th>Stil</th>
                             <th>Durum</th>
@@ -48,6 +70,19 @@
                                     }
                                 </td>
                                 <td>@outfit.Title</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(outfit.Slug))
+                                    {
+                                        <a href="/kombinler/@outfit.Slug" target="_blank" class="text-primary">
+                                            <small>@outfit.Slug</small>
+                                            <i class="fas fa-external-link-alt ms-1"></i>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted"><small>Oluşturulmadı</small></span>
+                                    }
+                                </td>
                                 <td>@outfit.Season</td>
                                 <td>@outfit.Style</td>
                                 <td>@outfit.Occasion</td>
@@ -93,6 +128,11 @@
                             <div class="mb-3">
                                 <label class="form-label">Başlık</label>
                                 <input type="text" class="form-control" name="Title" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">SEO URL (Slug)</label>
+                                <input type="text" class="form-control" name="Slug" placeholder="Otomatik oluşturulacak (opsiyonel)">
+                                <small class="text-muted">Boş bırakırsanız başlıktan otomatik oluşturulur.</small>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Açıklama</label>
@@ -188,6 +228,11 @@
                             <div class="mb-3">
                                 <label class="form-label">Başlık</label>
                                 <input type="text" class="form-control" name="Title" id="editTitle" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">SEO URL</label>
+                                <input type="text" class="form-control" name="Slug" id="editSlug" placeholder="Otomatik oluşturulacak (opsiyonel)">
+                                <small class="text-muted">Boş bırakırsanız başlıktan otomatik oluşturulur.</small>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Açıklama</label>
@@ -456,6 +501,7 @@
                     // Form alanlarını doldur
                     $('#editOutfitId').val(outfit.id);
                     $('#editTitle').val(outfit.title);
+                    $('#editSlug').val(outfit.slug);
                     $('#editDescription').val(outfit.description);
                     $('#editSeason').val(outfit.season);
                     $('#editStyle').val(outfit.style);
