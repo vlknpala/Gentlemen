@@ -1,11 +1,12 @@
 @model IEnumerable<Gentlemen.Models.Blog>
 
 @{
-    ViewData["Title"] = "Blog";
+    ViewData["Title"] = "Stil Blogu";
 }
 
 <div class="container">
-    <h1 class="section-title text-center mb-4">Blog</h1>
+    <h1 class="section-title text-center mb-4">Stil Blogu</h1>
+    <p class="text-center text-muted mb-5">Moda ve stil dünyasından en son haberler</p>
 
     @if (!Model?.Any() ?? true)
     {
@@ -28,7 +29,9 @@
                         }
                         <div class="card-body">
                             <h5 class="card-title">@blog.Title</h5>
-                            <p class="card-text">@(blog.Content.Length > 150 ? blog.Content.Substring(0, 150) + "..." : blog.Content)</p>
+                            <p class="card-text">@Html.Raw(System.Text.RegularExpressions.Regex.Replace(blog.Content.Length > 150 
+                                ? blog.Content.Substring(0, 150) + "..." 
+                                : blog.Content, "<.*?>", ""))</p>
                             <div class="d-flex justify-content-between align-items-center">
                                 <small class="text-muted">
                                     <i class="fas fa-user"></i> @blog.Author

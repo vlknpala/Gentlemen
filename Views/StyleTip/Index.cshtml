@@ -38,7 +38,7 @@
                             <div class="col-md-8">
                                 <div class="card-body">
                                     <h5 class="card-title">@tip.Title</h5>
-                                    <p class="card-text">@(tip.Content.Length > 150 ? tip.Content.Substring(0, 150) + "..." : tip.Content)</p>
+                                    <p class="card-text">@Html.Raw(System.Text.RegularExpressions.Regex.Replace(tip.Content.Length > 150 ? tip.Content.Substring(0, 150) + "..." : tip.Content, "<.*?>", ""))</p>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div class="meta">
                                             <small class="text-muted">
