@@ -102,17 +102,20 @@ namespace Gentlemen.Controllers
             if (!result.Succeeded)
                 return RedirectToAction("Login");
 
-            var claims = result.Principal.Identities.FirstOrDefault()
-                .Claims.Select(claim => new
-                {
-                    claim.Type,
-                    claim.Value
-                });
+            var claimsIdentity = result.Principal.Identities.FirstOrDefault();
+            if (claimsIdentity == null)
+                return RedirectToAction("Login");
 
-            var email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-            var fullName = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-            var firstName = claims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName)?.Value ?? fullName?.Split(' ').FirstOrDefault() ?? "";
-            var lastName = claims.FirstOrDefault(c => c.Type == ClaimTypes.Surname)?.Value ?? fullName?.Split(' ').LastOrDefault() ?? "";
+            var claims = claimsIdentity.Claims.Select(claim => new
+            {
+                claim.Type,
+                claim.Value
+            });
+
+            var email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value ?? "";
+            var fullName = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? "";
+            var firstName = claims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName)?.Value ?? fullName.Split(' ').FirstOrDefault() ?? "";
+            var lastName = claims.FirstOrDefault(c => c.Type == ClaimTypes.Surname)?.Value ?? fullName.Split(' ').LastOrDefault() ?? "";
 
             // Check if user exists
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
@@ -137,7 +140,7 @@ namespace Gentlemen.Controllers
 
             // Set session
             HttpContext.Session.SetString("UserId", user.Id.ToString());
-            HttpContext.Session.SetString("UserName", user.Name);
+            HttpContext.Session.SetString("UserName", user.Name ?? "");
 
             return RedirectToAction("Index", "Home");
         }

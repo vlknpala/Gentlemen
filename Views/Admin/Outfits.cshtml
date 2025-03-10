@@ -12,9 +12,9 @@
             <a href="@Url.Action("GenerateSlugsForOutfits", "Admin")" class="btn btn-success me-2">
                 <i class="fas fa-link"></i> URL'leri Oluştur
             </a>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOutfitModal">
-                <i class="fas fa-plus"></i> Yeni Kombin Ekle
-            </button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOutfitModal">
+            <i class="fas fa-plus"></i> Yeni Kombin Ekle
+        </button>
         </div>
     </div>
 
@@ -53,7 +53,6 @@
                             <th>Stil</th>
                             <th>Durum</th>
                             <th>Fiyat</th>
-                            <th>Beğeni</th>
                             <th>Öne Çıkan</th>
                             <th>Eklenme Tarihi</th>
                             <th>İşlemler</th>
@@ -87,7 +86,6 @@
                                 <td>@outfit.Style</td>
                                 <td>@outfit.Occasion</td>
                                 <td>@outfit.EstimatedPrice.ToString("C")</td>
-                                <td>@outfit.Likes</td>
                                 <td>
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="featured-@outfit.Id"
@@ -140,10 +138,15 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Görsel</label>
-                                <input type="file" class="form-control" name="Image" accept="image/*" required>
+                                <input type="file" class="form-control" name="Image" id="addImage" accept="image/*" required>
                                 <div class="mt-2">
-                                    <img id="imagePreview" src="#" alt="Önizleme" style="max-width: 200px; display: none;">
+                                    <img id="addImagePreview" src="#" alt="Önizleme" style="max-width: 200px; display: none;">
                                 </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Görseller</label>
+                                <div id="addMultipleImageUploader"></div>
+                                <small class="form-text text-muted">Birden fazla görsel yükleyebilirsiniz. İlk yüklenen görsel ana görsel olarak kullanılacaktır.</small>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -245,6 +248,11 @@
                                 <div class="mt-2">
                                     <img id="editImagePreview" src="#" alt="Önizleme" style="max-width: 200px; display: none;">
                                 </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Görseller</label>
+                                <div id="editMultipleImageUploader"></div>
+                                <small class="form-text text-muted">Birden fazla görsel yükleyebilirsiniz. Ana görsel olarak işaretlemek için görsele tıklayın.</small>
                             </div>
                         </div>
                         <div class="col-md-6">

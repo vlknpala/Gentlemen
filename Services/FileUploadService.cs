@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Gentlemen.Services
@@ -10,6 +12,8 @@ namespace Gentlemen.Services
     {
         Task<string> UploadFileAsync(IFormFile file);
         Task<string> UploadFileAsync(IFormFile file, string folder);
+        Task<List<string>> UploadMultipleFilesAsync(IEnumerable<IFormFile> files);
+        Task<List<string>> UploadMultipleFilesAsync(IEnumerable<IFormFile> files, string folder);
         void DeleteFile(string filePath);
     }
 
@@ -81,6 +85,41 @@ namespace Gentlemen.Services
             {
                 throw new Exception($"File upload failed: {ex.Message}", ex);
             }
+        }
+
+        public async Task<List<string>> UploadMultipleFilesAsync(IEnumerable<IFormFile> files)
+        {
+            return await UploadMultipleFilesAsync(files, "");
+        }
+
+        public async Task<List<string>> UploadMultipleFilesAsync(IEnumerable<IFormFile> files, string folder)
+        {
+            if (files == null || !files.Any())
+            {
+                throw new ArgumentException("No files were provided");
+            }
+
+            var uploadedPaths = new List<string>();
+
+            foreach (var file in files)
+            {
+                try
+                {
+                    var path = await UploadFileAsync(file, folder);
+                    uploadedPaths.Add(path);
+                }
+                catch (Exception ex)
+                {
+                    // Hata durumunda yüklenen dosyaları temizle
+                    foreach (var uploadedPath in uploadedPaths)
+                    {
+                        DeleteFile(uploadedPath);
+                    }
+                    throw new Exception($"Multiple file upload failed: {ex.Message}", ex);
+                }
+            }
+
+            return uploadedPaths;
         }
 
         public void DeleteFile(string filePath)

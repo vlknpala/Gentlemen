@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Gentlemen.Models
@@ -17,6 +18,7 @@ namespace Gentlemen.Models
         // SEO-friendly URL için slug
         public string? Slug { get; set; }
 
+        // Geriye dönük uyumluluk için ana görsel URL'si
         public string ImageUrl { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Sezon alanı zorunludur.")]
@@ -43,5 +45,8 @@ namespace Gentlemen.Models
         public bool IsFeatured { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        // Çoklu fotoğraf ilişkisi
+        public virtual ICollection<Image>? Images { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Gentlemen.Models
@@ -14,6 +15,7 @@ namespace Gentlemen.Models
         [Required(ErrorMessage = "İçerik alanı zorunludur.")]
         public string Content { get; set; } = string.Empty;
 
+        // Geriye dönük uyumluluk için ana görsel URL'si
         public string? ImageUrl { get; set; }
 
         public string? Slug { get; set; }
@@ -29,5 +31,8 @@ namespace Gentlemen.Models
         public string Category { get; set; } = string.Empty;
 
         public int ViewCount { get; set; }
+
+        // Çoklu fotoğraf ilişkisi
+        public virtual ICollection<Image>? Images { get; set; }
     }
 }

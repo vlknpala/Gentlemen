@@ -15,6 +15,7 @@ namespace Gentlemen.Data
         public DbSet<StyleTip> StyleTips { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<Image> Images { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -95,6 +96,16 @@ namespace Gentlemen.Data
                 entity.Property(u => u.PhoneNumber)
                     .IsRequired()
                     .HasMaxLength(20);
+            });
+
+            // Image entity configuration
+            modelBuilder.Entity<Image>(entity =>
+            {
+                entity.ToTable("Images");
+                entity.Property(i => i.ImageUrl)
+                    .IsRequired();
+                entity.Property(i => i.CreatedAt)
+                    .IsRequired();
             });
 
             // Varsayılan kategorileri ekle

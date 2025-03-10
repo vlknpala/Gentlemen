@@ -10,6 +10,8 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Gentlemen.Controllers
 {
@@ -46,7 +48,7 @@ namespace Gentlemen.Controllers
                     HttpContext.Session.SetString("AdminUser", model.Username);
                     return RedirectToAction("Dashboard");
                 }
-
+                
                 ModelState.AddModelError("", "Geçersiz kullanıcı adı veya şifre.");
             }
             return View(model);
@@ -72,7 +74,7 @@ namespace Gentlemen.Controllers
             ViewBag.BlogCount = _context.Blogs.Count();
             ViewBag.OutfitCount = _context.Outfits.Count();
             ViewBag.StyleTipCount = _context.StyleTips.Count();
-
+            
             return View();
         }
 
@@ -153,12 +155,12 @@ namespace Gentlemen.Controllers
                     }
 
                     // Hala hata varsa
-                    if (!ModelState.IsValid)
-                    {
-                        var errors = string.Join("; ", ModelState.Values
-                            .SelectMany(v => v.Errors)
-                            .Select(e => e.ErrorMessage));
-                        return Json(new { success = false, message = $"Geçersiz veri: {errors}" });
+                if (!ModelState.IsValid)
+                {
+                    var errors = string.Join("; ", ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage));
+                    return Json(new { success = false, message = $"Geçersiz veri: {errors}" });
                     }
                 }
 
@@ -380,6 +382,168 @@ namespace Gentlemen.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> UploadMultipleImages(List<IFormFile> files)
+        {
+            if (!IsAdmin())
+                return Json(new { success = false, message = "Yetkisiz erişim." });
+
+            if (files == null || !files.Any())
+                return Json(new { success = false, message = "Dosya seçilmedi." });
+
+            try
+            {
+                List<string> filePaths = await _fileUploadService.UploadMultipleFilesAsync(files);
+                return Json(new { success = true, filePaths = filePaths });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveImagesToEntity(string entityType, int entityId, List<string> imagePaths, List<bool> isMainList = null)
+        {
+            if (!IsAdmin())
+                return Json(new { success = false, message = "Yetkisiz erişim." });
+
+            if (string.IsNullOrEmpty(entityType) || entityId <= 0 || imagePaths == null || !imagePaths.Any())
+                return Json(new { success = false, message = "Geçersiz parametreler." });
+
+            try
+            {
+                // Mevcut ana görseli bul
+                Image existingMainImage = null;
+                
+                switch (entityType.ToLower())
+                {
+                    case "outfit":
+                        var outfit = await _context.Outfits.Include(o => o.Images).FirstOrDefaultAsync(o => o.Id == entityId);
+                        if (outfit == null)
+                            return Json(new { success = false, message = "Kombin bulunamadı." });
+                        
+                        if (outfit.Images == null)
+                            outfit.Images = new List<Image>();
+                        
+                        existingMainImage = outfit.Images.FirstOrDefault(i => i.IsMain);
+                        
+                        for (int i = 0; i < imagePaths.Count; i++)
+                        {
+                            bool isMain = isMainList != null && i < isMainList.Count && isMainList[i];
+                            
+                            // Eğer bu görsel ana görsel olarak işaretlendiyse ve zaten bir ana görsel varsa
+                            if (isMain && existingMainImage != null)
+                            {
+                                existingMainImage.IsMain = false;
+                                existingMainImage = null;
+                            }
+                            
+                            var image = new Image
+                            {
+                                ImageUrl = imagePaths[i],
+                                OutfitId = entityId,
+                                IsMain = isMain,
+                                DisplayOrder = outfit.Images.Count + i
+                            };
+                            
+                            outfit.Images.Add(image);
+                            
+                            // İlk görsel veya ana görsel olarak işaretlenen görsel, ana ImageUrl olarak da ayarlanır
+                            if (isMain || outfit.Images.Count == 1)
+                            {
+                                outfit.ImageUrl = imagePaths[i];
+                            }
+                        }
+                        break;
+                        
+                    case "blog":
+                        var blog = await _context.Blogs.Include(b => b.Images).FirstOrDefaultAsync(b => b.Id == entityId);
+                        if (blog == null)
+                            return Json(new { success = false, message = "Blog yazısı bulunamadı." });
+                        
+                        if (blog.Images == null)
+                            blog.Images = new List<Image>();
+                        
+                        existingMainImage = blog.Images.FirstOrDefault(i => i.IsMain);
+                        
+                        for (int i = 0; i < imagePaths.Count; i++)
+                        {
+                            bool isMain = isMainList != null && i < isMainList.Count && isMainList[i];
+                            
+                            if (isMain && existingMainImage != null)
+                            {
+                                existingMainImage.IsMain = false;
+                                existingMainImage = null;
+                            }
+                            
+                            var image = new Image
+                            {
+                                ImageUrl = imagePaths[i],
+                                BlogId = entityId,
+                                IsMain = isMain,
+                                DisplayOrder = blog.Images.Count + i
+                            };
+                            
+                            blog.Images.Add(image);
+                            
+                            if (isMain || blog.Images.Count == 1)
+                            {
+                                blog.ImageUrl = imagePaths[i];
+                            }
+                        }
+                        break;
+                        
+                    case "styletip":
+                        var styleTip = await _context.StyleTips.Include(s => s.Images).FirstOrDefaultAsync(s => s.Id == entityId);
+                        if (styleTip == null)
+                            return Json(new { success = false, message = "Stil ipucu bulunamadı." });
+                        
+                        if (styleTip.Images == null)
+                            styleTip.Images = new List<Image>();
+                        
+                        existingMainImage = styleTip.Images.FirstOrDefault(i => i.IsMain);
+                        
+                        for (int i = 0; i < imagePaths.Count; i++)
+                        {
+                            bool isMain = isMainList != null && i < isMainList.Count && isMainList[i];
+                            
+                            if (isMain && existingMainImage != null)
+                            {
+                                existingMainImage.IsMain = false;
+                                existingMainImage = null;
+                            }
+                            
+                            var image = new Image
+                            {
+                                ImageUrl = imagePaths[i],
+                                StyleTipId = entityId,
+                                IsMain = isMain,
+                                DisplayOrder = styleTip.Images.Count + i
+                            };
+                            
+                            styleTip.Images.Add(image);
+                            
+                            if (isMain || styleTip.Images.Count == 1)
+                            {
+                                styleTip.ImageUrl = imagePaths[i];
+                            }
+                        }
+                        break;
+                        
+                    default:
+                        return Json(new { success = false, message = "Geçersiz entity tipi." });
+                }
+                
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Görseller başarıyla kaydedildi." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
         public IActionResult DeleteImage(string imagePath)
         {
             if (!IsAdmin())
@@ -389,6 +553,114 @@ namespace Gentlemen.Controllers
             {
                 _fileUploadService.DeleteFile(imagePath);
                 return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteEntityImage(int imageId)
+        {
+            if (!IsAdmin())
+                return Json(new { success = false, message = "Yetkisiz erişim." });
+
+            try
+            {
+                var image = await _context.Images.FindAsync(imageId);
+                if (image == null)
+                    return Json(new { success = false, message = "Görsel bulunamadı." });
+
+                // Dosya sisteminden sil
+                _fileUploadService.DeleteFile(image.ImageUrl);
+
+                // Ana görsel mi kontrol et
+                bool isMain = image.IsMain;
+                string entityType = null;
+                int entityId = 0;
+
+                if (image.OutfitId.HasValue)
+                {
+                    entityType = "outfit";
+                    entityId = image.OutfitId.Value;
+                }
+                else if (image.BlogId.HasValue)
+                {
+                    entityType = "blog";
+                    entityId = image.BlogId.Value;
+                }
+                else if (image.StyleTipId.HasValue)
+                {
+                    entityType = "styletip";
+                    entityId = image.StyleTipId.Value;
+                }
+
+                // Veritabanından sil
+                _context.Images.Remove(image);
+
+                // Eğer silinen görsel ana görsel ise, başka bir görseli ana görsel olarak ayarla
+                if (isMain && !string.IsNullOrEmpty(entityType))
+                {
+                    Image newMainImage = null;
+                    
+                    switch (entityType)
+                    {
+                        case "outfit":
+                            var outfit = await _context.Outfits.Include(o => o.Images).FirstOrDefaultAsync(o => o.Id == entityId);
+                            if (outfit != null && outfit.Images != null && outfit.Images.Any())
+                            {
+                                newMainImage = outfit.Images.OrderBy(i => i.DisplayOrder).FirstOrDefault();
+                                if (newMainImage != null)
+                                {
+                                    newMainImage.IsMain = true;
+                                    outfit.ImageUrl = newMainImage.ImageUrl;
+                                }
+                                else
+                                {
+                                    outfit.ImageUrl = "";
+                                }
+                            }
+                            break;
+                            
+                        case "blog":
+                            var blog = await _context.Blogs.Include(b => b.Images).FirstOrDefaultAsync(b => b.Id == entityId);
+                            if (blog != null && blog.Images != null && blog.Images.Any())
+                            {
+                                newMainImage = blog.Images.OrderBy(i => i.DisplayOrder).FirstOrDefault();
+                                if (newMainImage != null)
+                                {
+                                    newMainImage.IsMain = true;
+                                    blog.ImageUrl = newMainImage.ImageUrl;
+                                }
+                                else
+                                {
+                                    blog.ImageUrl = null;
+                                }
+                            }
+                            break;
+                            
+                        case "styletip":
+                            var styleTip = await _context.StyleTips.Include(s => s.Images).FirstOrDefaultAsync(s => s.Id == entityId);
+                            if (styleTip != null && styleTip.Images != null && styleTip.Images.Any())
+                            {
+                                newMainImage = styleTip.Images.OrderBy(i => i.DisplayOrder).FirstOrDefault();
+                                if (newMainImage != null)
+                                {
+                                    newMainImage.IsMain = true;
+                                    styleTip.ImageUrl = newMainImage.ImageUrl;
+                                }
+                                else
+                                {
+                                    styleTip.ImageUrl = null;
+                                }
+                            }
+                            break;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Görsel başarıyla silindi." });
             }
             catch (Exception ex)
             {
@@ -563,78 +835,40 @@ namespace Gentlemen.Controllers
 
             try
             {
-                if (!ModelState.IsValid)
+                // Görsel yükleme (geriye dönük uyumluluk için)
+                if (Image != null)
                 {
-                    var errors = string.Join("; ", ModelState.Values
-                        .SelectMany(v => v.Errors)
-                        .Select(e => e.ErrorMessage));
-                    return Json(new { success = false, message = $"Geçersiz veri: {errors}" });
+                    styleTip.ImageUrl = await _fileUploadService.UploadFileAsync(Image, "styletips");
                 }
-
-                if (Image == null || Image.Length == 0)
-                {
-                    return Json(new { success = false, message = "Lütfen bir görsel seçin." });
-                }
-
-                // Görsel yükleme
-                try
-                {
-                    string imageUrl = await _fileUploadService.UploadFileAsync(Image);
-                    styleTip.ImageUrl = imageUrl;
-                }
-                catch (Exception ex)
-                {
-                    return Json(new { success = false, message = $"Görsel yükleme hatası: {ex.Message}" });
-                }
-
-                // Stil ipucu bilgilerini ayarla
-                styleTip.PublishDate = DateTime.Now;
-                styleTip.Likes = 0;
 
                 // Slug oluştur
                 if (string.IsNullOrEmpty(styleTip.Slug))
                 {
                     styleTip.Slug = GenerateSlug(styleTip.Title);
                 }
-                else
-                {
-                    styleTip.Slug = GenerateSlug(styleTip.Slug);
-                }
 
-                // Kategori adını da kaydet (geriye dönük uyumluluk için)
+                // Yayın tarihi
+                styleTip.PublishDate = DateTime.Now;
+
+                // Kategori ilişkisi
                 if (styleTip.CategoryId.HasValue)
                 {
-                    var category = await _context.Categories.FindAsync(styleTip.CategoryId.Value);
+                    var category = await _context.Categories.FindAsync(styleTip.CategoryId);
                     if (category != null)
                     {
                         styleTip.Category = category.Title;
                     }
                 }
 
-                // Veritabanına kaydet
-                try
-                {
                     _context.StyleTips.Add(styleTip);
                     await _context.SaveChangesAsync();
 
-                    _logger.LogInformation($"Yeni stil ipucu eklendi: {styleTip.Title}");
-                    return Json(new { success = true, message = "Stil ipucu başarıyla eklendi." });
+                _logger.LogInformation($"Yeni stil ipucu eklendi: {styleTip.Title}");
+                return Json(new { success = true, message = "Stil ipucu başarıyla eklendi.", styleTipId = styleTip.Id });
                 }
                 catch (Exception ex)
                 {
-                    // Görsel yüklendiyse sil
-                    if (!string.IsNullOrEmpty(styleTip.ImageUrl))
-                    {
-                        _fileUploadService.DeleteFile(styleTip.ImageUrl);
-                    }
-
-                    _logger.LogError($"Veritabanı hatası: {ex.Message}");
-                    return Json(new { success = false, message = "Veritabanı hatası oluştu." });
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Beklenmeyen hata: {ex.Message}");
+                _logger.LogError($"Stil ipucu ekleme hatası: {ex.Message}");
                 return Json(new { success = false, message = "Beklenmeyen bir hata oluştu." });
             }
         }
@@ -686,68 +920,76 @@ namespace Gentlemen.Controllers
         public async Task<IActionResult> EditStyleTip(int id, StyleTip styleTip, IFormFile Image)
         {
             if (!IsAdmin())
-                return RedirectToAction("Login");
+                return Json(new { success = false, message = "Yetkisiz erişim." });
 
-            if (id != styleTip.Id)
-            {
-                return NotFound();
-            }
-
-            try
-            {
-                var existingStyleTip = await _context.StyleTips.FindAsync(id);
-                if (existingStyleTip == null)
+                try
                 {
-                    return NotFound();
+                    var existingStyleTip = await _context.StyleTips.FindAsync(id);
+                    if (existingStyleTip == null)
+                {
+                    return Json(new { success = false, message = "Stil ipucu bulunamadı." });
                 }
 
-                // Slug kontrolü
-                if (string.IsNullOrEmpty(styleTip.Slug))
-                {
-                    styleTip.Slug = GenerateSlug(styleTip.Title);
+                // Mevcut görsel URL'sini sakla
+                string oldImageUrl = existingStyleTip.ImageUrl ?? "";
+
+                // Yeni görsel yüklendiyse
+                    if (Image != null && Image.Length > 0)
+                    {
+                    try
+                    {
+                        // Eski görseli sil (eğer varsa)
+                        if (!string.IsNullOrEmpty(oldImageUrl))
+                        {
+                            _fileUploadService.DeleteFile(oldImageUrl);
+                        }
+
+                        // Yeni görseli yükle
+                        styleTip.ImageUrl = await _fileUploadService.UploadFileAsync(Image, "styletips");
+                    }
+                    catch (Exception ex)
+                    {
+                        return Json(new { success = false, message = $"Görsel yükleme hatası: {ex.Message}" });
+                    }
                 }
                 else
                 {
-                    styleTip.Slug = GenerateSlug(styleTip.Slug);
+                    // Görsel değiştirilmediyse mevcut görseli kullan
+                    styleTip.ImageUrl = oldImageUrl;
                 }
 
-                if (Image != null && Image.Length > 0)
+                // Slug kontrolü
+                if (string.IsNullOrWhiteSpace(styleTip.Slug))
                 {
-                    if (!string.IsNullOrEmpty(existingStyleTip.ImageUrl))
-                    {
-                        _fileUploadService.DeleteFile(existingStyleTip.ImageUrl);
-                    }
-
-                    string imageUrl = await _fileUploadService.UploadFileAsync(Image);
-                    existingStyleTip.ImageUrl = imageUrl;
+                    styleTip.Slug = GenerateSlug(styleTip.Title);
                 }
 
-                existingStyleTip.Title = styleTip.Title;
-                existingStyleTip.Content = styleTip.Content;
-                existingStyleTip.CategoryId = styleTip.CategoryId;
-                existingStyleTip.Author = styleTip.Author;
-                existingStyleTip.IsFeatured = styleTip.IsFeatured;
-                existingStyleTip.Slug = styleTip.Slug;
-
-                // Kategori adını da güncelle (geriye dönük uyumluluk için)
+                // Kategori ilişkisi
                 if (styleTip.CategoryId.HasValue)
                 {
-                    var category = await _context.Categories.FindAsync(styleTip.CategoryId.Value);
+                    var category = await _context.Categories.FindAsync(styleTip.CategoryId);
                     if (category != null)
                     {
-                        existingStyleTip.Category = category.Title;
+                        styleTip.Category = category.Title;
                     }
                 }
 
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Stil ipucu başarıyla güncellendi.";
-                return RedirectToAction(nameof(StyleTips));
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", "Stil ipucu güncellenirken bir hata oluştu: " + ex.Message);
-                ViewBag.Categories = await _context.Categories.ToListAsync();
-                return View(styleTip);
+                // Değiştirilmeyen alanları güncelle
+                styleTip.PublishDate = existingStyleTip.PublishDate;
+                styleTip.Likes = existingStyleTip.Likes;
+                styleTip.CreatedAt = existingStyleTip.CreatedAt;
+
+                // Entity'yi güncelle
+                _context.Entry(existingStyleTip).CurrentValues.SetValues(styleTip);
+                    await _context.SaveChangesAsync();
+
+                _logger.LogInformation($"Stil ipucu güncellendi: {styleTip.Title}");
+                return Json(new { success = true, message = "Stil ipucu başarıyla güncellendi." });
+                }
+                catch (Exception ex)
+                {
+                _logger.LogError($"Stil ipucu güncelleme hatası: {ex.Message}");
+                return Json(new { success = false, message = "Beklenmeyen bir hata oluştu." });
             }
         }
 
@@ -947,6 +1189,178 @@ namespace Gentlemen.Controllers
 
             TempData["Message"] = $"{count} blog yazısı için slug oluşturuldu.";
             return RedirectToAction("Blogs");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ReorderImages(List<int> imageIds)
+        {
+            if (!IsAdmin())
+                return Json(new { success = false, message = "Yetkisiz erişim." });
+
+            if (imageIds == null || !imageIds.Any())
+                return Json(new { success = false, message = "Görsel listesi boş." });
+
+            try
+            {
+                for (int i = 0; i < imageIds.Count; i++)
+                {
+                    var image = await _context.Images.FindAsync(imageIds[i]);
+                    if (image != null)
+                    {
+                        image.DisplayOrder = i;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Görsel sıralaması güncellendi." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SetMainImage(int imageId)
+        {
+            if (!IsAdmin())
+                return Json(new { success = false, message = "Yetkisiz erişim." });
+
+            try
+            {
+                var image = await _context.Images.FindAsync(imageId);
+                if (image == null)
+                    return Json(new { success = false, message = "Görsel bulunamadı." });
+
+                // Entity tipini ve ID'sini belirle
+                string entityType = null;
+                int entityId = 0;
+
+                if (image.OutfitId.HasValue)
+                {
+                    entityType = "outfit";
+                    entityId = image.OutfitId.Value;
+                }
+                else if (image.BlogId.HasValue)
+                {
+                    entityType = "blog";
+                    entityId = image.BlogId.Value;
+                }
+                else if (image.StyleTipId.HasValue)
+                {
+                    entityType = "styletip";
+                    entityId = image.StyleTipId.Value;
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Görsel herhangi bir içerikle ilişkilendirilmemiş." });
+                }
+
+                // Mevcut ana görseli bul ve işaretini kaldır
+                switch (entityType)
+                {
+                    case "outfit":
+                        var outfit = await _context.Outfits.Include(o => o.Images).FirstOrDefaultAsync(o => o.Id == entityId);
+                        if (outfit != null)
+                        {
+                            foreach (var img in outfit.Images)
+                            {
+                                img.IsMain = (img.Id == imageId);
+                            }
+                            outfit.ImageUrl = image.ImageUrl;
+                        }
+                        break;
+                        
+                    case "blog":
+                        var blog = await _context.Blogs.Include(b => b.Images).FirstOrDefaultAsync(b => b.Id == entityId);
+                        if (blog != null)
+                        {
+                            foreach (var img in blog.Images)
+                            {
+                                img.IsMain = (img.Id == imageId);
+                            }
+                            blog.ImageUrl = image.ImageUrl;
+                        }
+                        break;
+                        
+                    case "styletip":
+                        var styleTip = await _context.StyleTips.Include(s => s.Images).FirstOrDefaultAsync(s => s.Id == entityId);
+                        if (styleTip != null)
+                        {
+                            foreach (var img in styleTip.Images)
+                            {
+                                img.IsMain = (img.Id == imageId);
+                            }
+                            styleTip.ImageUrl = image.ImageUrl;
+                        }
+                        break;
+                }
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Ana görsel güncellendi." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetEntityImages(string entityType, int entityId)
+        {
+            if (!IsAdmin())
+                return Json(new { success = false, message = "Yetkisiz erişim." });
+
+            try
+            {
+                List<Image> images = new List<Image>();
+                
+                switch (entityType.ToLower())
+                {
+                    case "outfit":
+                        var outfit = await _context.Outfits.Include(o => o.Images).FirstOrDefaultAsync(o => o.Id == entityId);
+                        if (outfit != null && outfit.Images != null)
+                        {
+                            images = outfit.Images.OrderBy(i => i.DisplayOrder).ToList();
+                        }
+                        break;
+                        
+                    case "blog":
+                        var blog = await _context.Blogs.Include(b => b.Images).FirstOrDefaultAsync(b => b.Id == entityId);
+                        if (blog != null && blog.Images != null)
+                        {
+                            images = blog.Images.OrderBy(i => i.DisplayOrder).ToList();
+                        }
+                        break;
+                        
+                    case "styletip":
+                        var styleTip = await _context.StyleTips.Include(s => s.Images).FirstOrDefaultAsync(s => s.Id == entityId);
+                        if (styleTip != null && styleTip.Images != null)
+                        {
+                            images = styleTip.Images.OrderBy(i => i.DisplayOrder).ToList();
+                        }
+                        break;
+                        
+                    default:
+                        return Json(new { success = false, message = "Geçersiz entity tipi." });
+                }
+                
+                var result = images.Select(i => new
+                {
+                    id = i.Id,
+                    url = i.ImageUrl,
+                    isMain = i.IsMain,
+                    displayOrder = i.DisplayOrder,
+                    title = i.Title,
+                    description = i.Description
+                }).ToList();
+                
+                return Json(new { success = true, images = result });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
     }
 }

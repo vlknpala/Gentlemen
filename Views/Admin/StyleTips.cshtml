@@ -166,6 +166,11 @@
                                 </div>
                             </div>
                             <div class="mb-3">
+                                <label class="form-label">Görseller</label>
+                                <div id="multipleImageUploader"></div>
+                                <small class="form-text text-muted">Birden fazla görsel yükleyebilirsiniz. İlk yüklenen görsel ana görsel olarak kullanılacaktır.</small>
+                            </div>
+                            <div class="mb-3">
                                 <label class="form-label">Yazar</label>
                                 <input type="text" class="form-control" name="Author" required>
                             </div>
@@ -258,6 +263,26 @@
                 }
             });
 
+            // Multiple Image Uploader
+            let imageUploader = null;
+            
+            // Yeni stil ipucu ekleme modalı açıldığında
+            $('#addStyleTipModal').on('show.bs.modal', function() {
+                if (imageUploader) {
+                    imageUploader.reset();
+                } else {
+                    imageUploader = new MultipleImageUploader({
+                        container: '#multipleImageUploader',
+                        entityType: 'styletip',
+                        maxFiles: 10,
+                        maxFileSize: 5,
+                        onError: function(error) {
+                            showAlert('danger', error.message);
+                        }
+                    });
+                }
+            });
+
             function toggleFeatured(id, isFeatured, switchElement) {
                 $.post('/Admin/ToggleStyleTipFeatured/' + id, { isFeatured: isFeatured })
                     .done(function(response) {
@@ -296,42 +321,57 @@
                     success: function(response) {
                         console.log('AJAX başarılı:', response);
                         if (response.success) {
-                            showAlert('success', response.message || 'Stil ipucu başarıyla eklendi.');
-                            $('#addStyleTipModal').modal('hide');
-                            $('#addStyleTipForm')[0].reset();
-                            $('#imagePreview').hide();
-                            $('.summernote').summernote('reset');
-
-                            // Sayfayı yenilemek yerine tabloyu yenile
-                            $.get('/Admin/StyleTips', function(data) {
-                                console.log('Tablo verisi alındı');
-                                const newContent = $(data).find('#styleTipsTable tbody').html();
-                                console.log('Yeni içerik:', newContent);
-                                table.clear().destroy();
-                                $('#styleTipsTable tbody').html(newContent);
-                                table = $('#styleTipsTable').DataTable({
-                                    responsive: true,
-                                    language: {
-                                        url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json',
-                                        emptyTable: "Tabloda veri bulunmuyor",
-                                        info: "_TOTAL_ kayıttan _START_ - _END_ arası gösteriliyor",
-                                        infoEmpty: "Kayıt yok",
-                                        loadingRecords: "Yükleniyor...",
-                                        processing: "İşleniyor...",
-                                        zeroRecords: "Eşleşen kayıt bulunamadı"
-                                    },
-                                    columnDefs: [
-                                        { orderable: false, targets: [0, 7, 8] },
-                                        { searchable: false, targets: [0, 7, 8] }
-                                    ],
-                                    order: [[5, 'desc']],
-                                    pageLength: 10,
-                                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tümü"]],
-                                    stateSave: true
+                            // Eğer stil ipucu başarıyla eklendiyse ve ID döndüyse
+                            if (response.styleTipId && imageUploader && imageUploader.getUploadedFiles().length > 0) {
+                                // Görselleri kaydet
+                                imageUploader.options.entityId = response.styleTipId;
+                                imageUploader.saveImagesToEntity().then(function(result) {
+                                    if (result.success) {
+                                        showAlert('success', 'Stil ipucu ve görseller başarıyla eklendi.');
+                                        setTimeout(() => location.reload(), 1500);
+                                    } else {
+                                        showAlert('warning', 'Stil ipucu eklendi ancak görseller kaydedilirken bir hata oluştu: ' + result.message);
+                                        setTimeout(() => location.reload(), 2000);
+                                    }
                                 });
-                            }).fail(function(error) {
-                                console.error('Tablo güncelleme hatası:', error);
-                            });
+                            } else {
+                                showAlert('success', response.message || 'Stil ipucu başarıyla eklendi.');
+                                $('#addStyleTipModal').modal('hide');
+                                $('#addStyleTipForm')[0].reset();
+                                $('#imagePreview').hide();
+                                $('.summernote').summernote('reset');
+
+                                // Sayfayı yenilemek yerine tabloyu yenile
+                                $.get('/Admin/StyleTips', function(data) {
+                                    console.log('Tablo verisi alındı');
+                                    const newContent = $(data).find('#styleTipsTable tbody').html();
+                                    console.log('Yeni içerik:', newContent);
+                                    table.clear().destroy();
+                                    $('#styleTipsTable tbody').html(newContent);
+                                    table = $('#styleTipsTable').DataTable({
+                                        responsive: true,
+                                        language: {
+                                            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json',
+                                            emptyTable: "Tabloda veri bulunmuyor",
+                                            info: "_TOTAL_ kayıttan _START_ - _END_ arası gösteriliyor",
+                                            infoEmpty: "Kayıt yok",
+                                            loadingRecords: "Yükleniyor...",
+                                            processing: "İşleniyor...",
+                                            zeroRecords: "Eşleşen kayıt bulunamadı"
+                                        },
+                                        columnDefs: [
+                                            { orderable: false, targets: [0, 7, 8] },
+                                            { searchable: false, targets: [0, 7, 8] }
+                                        ],
+                                        order: [[5, 'desc']],
+                                        pageLength: 10,
+                                        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tümü"]],
+                                        stateSave: true
+                                    });
+                                }).fail(function(error) {
+                                    console.error('Tablo güncelleme hatası:', error);
+                                });
+                            }
                         } else {
                             showAlert('danger', response.message || 'Bir hata oluştu.');
                             console.error('Sunucu hatası:', response);
@@ -362,7 +402,7 @@
         }
 
         function editStyleTip(id) {
-            // TODO: Implement edit functionality
+            // Düzenleme sayfasına yönlendir
             window.location.href = '/Admin/EditStyleTip/' + id;
         }
 

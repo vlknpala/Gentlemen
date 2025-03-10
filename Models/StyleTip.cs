@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -28,6 +29,7 @@ namespace Gentlemen.Models
         [ForeignKey("CategoryId")]
         public virtual Category? CategoryObject { get; set; }
 
+        // Geriye dönük uyumluluk için ana görsel URL'si
         public string? ImageUrl { get; set; }
 
         [Required(ErrorMessage = "Yayın tarihi zorunludur.")]
@@ -41,5 +43,10 @@ namespace Gentlemen.Models
         public bool IsFeatured { get; set; }
 
         public int Likes { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        // Çoklu fotoğraf ilişkisi
+        public virtual ICollection<Image>? Images { get; set; }
     }
 }
